@@ -77,6 +77,18 @@ export default function Dashboard() {
             </Card>
           </a>
         </GridItem>
+        <GridItem xs={12} sm={6} md={3}>
+          <a href="/admin/usuarios">
+            <Card>
+              <CardHeader color="danger" stats icon>
+                <CardIcon color="danger">
+                  <Icon>person</Icon>
+                </CardIcon>
+                <p className={classes.cardCategory}>Usuários</p>
+              </CardHeader>
+            </Card>
+          </a>
+        </GridItem>
       </GridContainer>
     </div>
   );

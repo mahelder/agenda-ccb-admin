@@ -30,6 +30,9 @@ import ContactsList from "views/Contacts/ContactsList.js";
 import ContactsForm from "views/Contacts/ContactsForm.js";
 import AgendasList from "views/Agendas/AgendasList.js";
 import AgendasForm from "views/Agendas/AgendasForm.js";
+import UsersList from "views/Users/UsersList.js";
+import UsersForm from "views/Users/UsersForm.js";
+
 // core components/views for RTL layout
 
 const dashboardRoutes = [
@@ -154,6 +157,22 @@ const dashboardRoutes = [
     rtlName: "ملف تعريفي للمستخدم",
     icon: "work",
     component: JobsForm,
+    invisible: true,
+    layout: "/admin",
+  },
+  {
+    path: "/usuarios",
+    name: "Usuários",
+    icon: Person,
+    component: UsersList,
+    layout: "/admin",
+  },
+  {
+    path: "/novo-usuario",
+    name: "Novo Usuário",
+    rtlName: "ملف تعريفي للمستخدم",
+    icon: Person,
+    component: UsersForm,
     invisible: true,
     layout: "/admin",
   },

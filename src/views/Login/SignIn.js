@@ -64,8 +64,19 @@ export default function SignIn() {
     event.preventDefault();
     setMessage("Entrando...");
     try {
-      await firebase.auth().signInWithEmailAndPassword(email, password);
-      window.location.pathname = "/admin/dashboard";
+      let auth = await firebase
+        .auth()
+        .signInWithEmailAndPassword(email, password);
+      let user = await firebase
+        .database()
+        .ref(`/users/${auth.user.uid}`)
+        .once("value");
+      if (user.val() === null) {
+        auth.user.delete();
+        setMessage(`Erro de autenticação. Usuário não cadastrado.`);
+      } else {
+        window.location.pathname = "/admin/dashboard";
+      }
     } catch (error) {
       setMessage(`Erro de autenticação. Erro: ${error}`);
     }

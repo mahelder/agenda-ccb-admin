@@ -9,7 +9,6 @@ import Button from "components/CustomButtons/Button.js";
 import { CircularProgress } from "@material-ui/core";
 
 import firebase from "firebase";
-import { element } from "prop-types";
 
 class JobsList extends React.Component {
   constructor(props) {
