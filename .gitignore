@@ -37,3 +37,4 @@ src/configFirebase.js
 
 documentation/
 
+.vscode/launch.json

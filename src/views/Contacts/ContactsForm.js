@@ -65,10 +65,14 @@ export default function ContactsForm() {
   const [office, setOffice] = React.useState("");
   const [voluntary, setVoluntary] = React.useState("");
   const [group, setGroup] = React.useState("");
+  const [offices, setOffices] = React.useState([]);
+  const [availableOffices, setAvailableOffices] = React.useState([]);
+  const [officeGroup, setOfficeGroup] = React.useState("");
 
   React.useEffect(() => {
     async function loadGroups() {
       let groups = [];
+      let offices = [];
       let persons = [];
 
       let entity = await firebase
@@ -80,6 +84,13 @@ export default function ContactsForm() {
         groups.push({
           key: element.key,
           descricao: element.val()["descricao"],
+        });
+        element.forEach((office) => {
+          offices.push({
+            parent: element.key,
+            key: office.key,
+            descricao: office.val()["descricao"],
+          });
         });
       });
 
@@ -97,7 +108,12 @@ export default function ContactsForm() {
         return a.descricao > b.descricao ? 1 : -1;
       });
 
+      offices.sort(function (a, b) {
+        return a.descricao > b.descricao ? 1 : -1;
+      });
+
       setGroups(groups);
+      setOffices(offices);
       setVolunteers(persons);
       setLoading(false);
     }
@@ -110,6 +126,15 @@ export default function ContactsForm() {
       // eslint-disable-next-line react/jsx-key
       <MenuItem key={group.key} value={group.key}>
         {group.descricao}
+      </MenuItem>
+    ));
+  };
+
+  const getMenuItemOfficeGroup = () => {
+    return availableOffices.map((office) => (
+      // eslint-disable-next-line react/jsx-key
+      <MenuItem key={office.key} value={office.key}>
+        {office.descricao}
       </MenuItem>
     ));
   };
@@ -149,10 +174,20 @@ export default function ContactsForm() {
 
   const handleGroupChange = (event) => {
     setGroup(event.target.value);
+    getAvailableOfficeGroup(event.target.value);
   };
 
   const handleVoluntaryChange = (event) => {
     setVoluntary(event.target.value);
+  };
+
+  const handleOfficeGroupChange = (event) => {
+    setOfficeGroup(event.target.value);
+  };
+
+  const getAvailableOfficeGroup = (selectedGroup) => {
+    let availables = offices.filter((x) => x.parent === selectedGroup);
+    setAvailableOffices(availables);
   };
 
   const handleOfficeChange = (event) => {
@@ -172,7 +207,8 @@ export default function ContactsForm() {
   const validate = () => {
     let validations = [];
     if (voluntary === "") validations.push("Voluntário é obrigatório.");
-    if (group === "") validations.push("Grupo é obrigatório.");
+    if (group === "") validations.push("Seção é obrigatório.");
+    if (officeGroup === "") validations.push("Cargo/Função é obrigatório.");
 
     setErrors(validations);
     return validations.length > 0;
@@ -186,17 +222,19 @@ export default function ContactsForm() {
       if (contact.links === undefined) {
         contact.links = {};
       }
-      contact.links[`${group}`] = `/lista-telefones/${group}`;
+      contact.links[
+        `${officeGroup}`
+      ] = `/lista-telefones/${group}/${officeGroup}`;
 
       await firebase
         .database()
-        .ref(`/lista-telefones/${group}/${voluntary}`)
+        .ref(`/lista-telefones/${group}/${officeGroup}/${voluntary}`)
         .update(contact);
 
       await firebase
         .database()
-        .ref(`/voluntarios/${voluntary}/links/${group}`)
-        .set(`/lista-telefones/${group}`);
+        .ref(`/voluntarios/${voluntary}/links/${officeGroup}`)
+        .set(`/lista-telefones/${group}/${officeGroup}`);
     } catch (error) {
       setErrors([error]);
     }
@@ -217,7 +255,7 @@ export default function ContactsForm() {
               <GridContainer>
                 <GridItem xs={12} sm={12} md={6}>
                   <FormControl className={classes.formControl}>
-                    <InputLabel id="select">Cargo/Função</InputLabel>
+                    <InputLabel id="select">Seção</InputLabel>
                     <Select
                       labelId="select"
                       id="select"
@@ -225,6 +263,19 @@ export default function ContactsForm() {
                       onChange={handleGroupChange}
                     >
                       {getMenuItemGroup()}
+                    </Select>
+                  </FormControl>
+                </GridItem>
+                <GridItem xs={12} sm={12} md={6}>
+                  <FormControl className={classes.formControl}>
+                    <InputLabel id="select">Cargo/Função</InputLabel>
+                    <Select
+                      labelId="select"
+                      id="select"
+                      value={officeGroup}
+                      onChange={handleOfficeGroupChange}
+                    >
+                      {getMenuItemOfficeGroup()}
                     </Select>
                   </FormControl>
                 </GridItem>
@@ -241,7 +292,7 @@ export default function ContactsForm() {
                     </Select>
                   </FormControl>
                 </GridItem>
-                {listFunctions.includes(group) && (
+                {listFunctions.includes(availableOffices) && (
                   <GridItem xs={12} sm={12} md={6}>
                     <FormControl className={classes.formControl}>
                       <InputLabel id="select">Cargo</InputLabel>

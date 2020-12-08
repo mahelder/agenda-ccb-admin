@@ -38,7 +38,10 @@ class ContactsList extends React.Component {
     super(props);
     this.state = {
       selectedGroup: "",
+      selectedOffice: "",
       groups: [],
+      offices: [],
+      availableOffices: [],
       data: {},
       tabledata: [],
       loading: false,
@@ -54,13 +57,13 @@ class ContactsList extends React.Component {
     window.location.pathname = "/admin/novo-contato";
   }
 
-  async handleDelete(group, contact) {
+  async handleDelete(group, office, contact) {
     if (window.confirm(`Deseja excluir o irmão ${contact.val()["nome"]}?`)) {
       firebase
         .database()
         .ref(`/voluntarios/${contact.key}/links`)
         .orderByValue()
-        .equalTo(`/lista-telefones/${group}`)
+        .equalTo(`/lista-telefones/${group}/${office}`)
         .once("value", function (x) {
           let keys = Object.keys(x.val());
           keys.forEach((x) =>
@@ -73,16 +76,17 @@ class ContactsList extends React.Component {
 
       firebase
         .database()
-        .ref(`/lista-telefones/${group}/${contact.key}`)
+        .ref(`/lista-telefones/${group}/${office}/${contact.key}`)
         .remove();
       await this.loadContacts();
-      this.getTableData(group);
+      this.getTableData(group, office);
     }
   }
 
   async loadContacts() {
     this.setState({ loading: true });
     let groups = [];
+    let offices = [];
     let data = {};
     let entity = await firebase
       .database()
@@ -90,30 +94,50 @@ class ContactsList extends React.Component {
       .once("value");
     entity.forEach((element) => {
       groups.push({ key: element.key, descricao: element.val()["descricao"] });
-      data[element.key] = [];
-      element.forEach((contact) => {
-        if (contact.key !== "descricao") data[element.key].push(contact);
+      element.forEach((group) => {
+        if (group.key !== "descricao") {
+          offices.push({
+            parent: element.key,
+            key: group.key,
+            descricao: group.val()["descricao"],
+          });
+          data[group.key] = [];
+          group.forEach((contact) => {
+            if (contact.key !== "descricao") data[group.key].push(contact);
+          });
+          data[group.key] = data[group.key].sort((a, b) =>
+            a.val().nome > b.val().nome ? 1 : -1
+          );
+        }
       });
 
       groups.sort(function (a, b) {
         return a.descricao > b.descricao ? 1 : -1;
       });
-
-      data[element.key] = data[element.key].sort((a, b) =>
-        a.val().nome > b.val().nome ? 1 : -1
-      );
     });
 
-    this.setState({ groups, data, loading: false });
+    this.setState({ groups, offices, data, loading: false });
   }
 
   handleGroup(event) {
     this.setState({ selectedGroup: event.target.value });
-    this.getTableData(event.target.value);
+    this.getOfficesGroup(event.target.value);
   }
 
-  getTableData(selectedGroup) {
-    let data = this.state.data[selectedGroup];
+  handleOffice(event) {
+    this.setState({ selectedOffice: event.target.value });
+    this.getTableData(this.state.selectedGroup, event.target.value);
+  }
+
+  getOfficesGroup(selectedGroup) {
+    let availableOffices = this.state.offices.filter(
+      (x) => x.parent === selectedGroup
+    );
+    this.setState({ availableOffices });
+  }
+
+  getTableData(selectedGroup, selectedOffice) {
+    let data = this.state.data[selectedOffice];
     let tabledata = [];
     data.forEach((x) => {
       let columns = [
@@ -123,14 +147,14 @@ class ContactsList extends React.Component {
         x.val()["comum"],
       ];
 
-      if (listFunctions.includes(selectedGroup)) columns.push(x.val()["cargo"]);
+      if (listFunctions.includes(selectedOffice)) columns.push(x.val()["cargo"]);
 
       columns.push(
         <div key={x.key}>
           <a
             href="#"
             type="button"
-            onClick={() => this.handleDelete(selectedGroup, x)}
+            onClick={() => this.handleDelete(selectedGroup, selectedOffice, x)}
           >
             Excluir
           </a>
@@ -150,6 +174,15 @@ class ContactsList extends React.Component {
     ));
   }
 
+  getMenuItemOffice() {
+    return this.state.availableOffices.map((office) => (
+      // eslint-disable-next-line react/jsx-key
+      <MenuItem key={office.key} value={office.key}>
+        {office.descricao}
+      </MenuItem>
+    ));
+  }
+
   render() {
     let columns = ["Nome", "Telefone 1", "Telefone 2", "Comum"];
     if (listFunctions.includes(this.state.selectedGroup)) columns.push("Cargo");
@@ -161,9 +194,9 @@ class ContactsList extends React.Component {
           <CircularProgress color="inherit" />
         </Backdrop>
         <GridContainer>
-          <GridItem xs={12} sm={12} md={9}>
+          <GridItem xs={12} sm={12} md={5}>
             <FormControl style={styles.formControl}>
-              <InputLabel id="select">Grupo</InputLabel>
+              <InputLabel id="select">Seção</InputLabel>
               <Select
                 labelId="select"
                 id="select"
@@ -171,6 +204,19 @@ class ContactsList extends React.Component {
                 onChange={(event) => this.handleGroup(event)}
               >
                 {this.getMenuItemGroup()}
+              </Select>
+            </FormControl>
+          </GridItem>
+          <GridItem xs={12} sm={12} md={5}>
+            <FormControl style={styles.formControl}>
+              <InputLabel id="select">Cargo</InputLabel>
+              <Select
+                labelId="select"
+                id="select"
+                value={this.state.selectedOffice}
+                onChange={(event) => this.handleOffice(event)}
+              >
+                {this.getMenuItemOffice()}
               </Select>
             </FormControl>
           </GridItem>
@@ -182,7 +228,7 @@ class ContactsList extends React.Component {
         </GridContainer>
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
-            {this.state.selectedGroup.length > 0 && (
+            {this.state.selectedOffice.length > 0 && (
               <Card>
                 <CardBody>
                   <Table
