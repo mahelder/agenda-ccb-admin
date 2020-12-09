@@ -56,6 +56,7 @@ export default function ChurchesForm(props) {
   const [name, setName] = React.useState("");
   const [place, setPlace] = React.useState("");
   const [cults, setCults] = React.useState("");
+  const [location, setLocation] = React.useState("");
   const [rehearsals, setRehearsals] = React.useState("");
   const [rehearsalsDescription, setRehearsalsDescription] = React.useState("");
   // const [ministers, setMinisters] = React.useState(null);
@@ -83,6 +84,7 @@ export default function ChurchesForm(props) {
       }
 
       setCults(snapshot.val()["cults"]);
+      setLocation(snapshot.val()["location"]);
       setImg(snapshot.val()["imgUrl"]);
       setLoading(false);
     }
@@ -100,6 +102,10 @@ export default function ChurchesForm(props) {
 
   const handlePlaceChange = (event) => {
     setPlace(event.target.value);
+  };
+
+  const handleLocationChange = (event) => {
+    setLocation(event.target.value);
   };
 
   const handleClose = () => {
@@ -131,6 +137,8 @@ export default function ChurchesForm(props) {
       } catch (error) {
         console.log(error);
       }
+    } else {
+      return img;
     }
   };
 
@@ -164,6 +172,7 @@ export default function ChurchesForm(props) {
         place: place,
         // ministers: ministers,
         cults: cults,
+        location: location,
         rehearsals: {
           weekDay: rehearsals,
           description: rehearsalsDescription,
@@ -217,6 +226,19 @@ export default function ChurchesForm(props) {
                     inputProps={{
                       value: place,
                       onChange: handlePlaceChange,
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={6}>
+                  <CustomInput
+                    labelText="Link Localização"
+                    id="location"
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                    inputProps={{
+                      value: location,
+                      onChange: handleLocationChange,
                     }}
                   />
                 </GridItem>
