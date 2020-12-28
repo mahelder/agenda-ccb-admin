@@ -140,7 +140,8 @@ export default function ContactsForm() {
   };
 
   const getMenuItemVoluntary = () => {
-    return volunteers.map((x) => (
+    let filtered = volunteers.filter((x) => x.val()["nome"] !== undefined);
+    return filtered.map((x) => (
       // eslint-disable-next-line react/jsx-key
       <MenuItem key={x.key} value={x.key}>
         {x.val()["nome"]}

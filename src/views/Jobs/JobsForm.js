@@ -20,6 +20,10 @@ import ListItemText from "@material-ui/core/ListItemText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import Dialog from "@material-ui/core/Dialog";
 import Snackbar from "@material-ui/core/Snackbar";
+import InputLabel from "@material-ui/core/InputLabel";
+import MenuItem from "@material-ui/core/MenuItem";
+import FormControl from "@material-ui/core/FormControl";
+import Select from "@material-ui/core/Select";
 
 import firebase from "firebase";
 
@@ -52,26 +56,59 @@ export default function JobsForm(props) {
   const [errors, setErrors] = React.useState([]);
   const [id, setId] = React.useState(null);
   const [descricao, setDescricao] = React.useState("");
+  const [groups, setGroups] = React.useState([]);
+  const [group, setGroup] = React.useState("");
 
   React.useEffect(() => {
     async function fetchJob() {
       let id = props.match.params.id;
-      if (id === undefined) {
-        setLoading(false);
-        return;
-      }
-      setId(id);
-      let snapshot = await firebase
-        .database()
-        .ref(`/lista-telefones/${id}`)
-        .once("value");
+      let secao = props.match.params.secao;
 
-      setDescricao(snapshot.val()["descricao"]);
+      let entity = await firebase
+        .database()
+        .ref(`/lista-telefones`)
+        .once(`value`);
+
+      let groups = [];
+
+      entity.forEach((element) => {
+        groups.push({
+          key: element.key,
+          descricao: element.val()["descricao"],
+        });
+      });
+
+      setGroups(groups);
+      if (id !== undefined && secao !== undefined) {
+        setId(id);
+        setGroup(secao);
+
+        let snapshot = await firebase
+          .database()
+          .ref(`/lista-telefones/${secao}/${id}`)
+          .once("value");
+
+        setDescricao(snapshot.val()["descricao"]);
+      }
+
       setLoading(false);
     }
 
     fetchJob();
-  }, [props.match.params.id]);
+  }, [props.match.params.id, props.match.params.secao]);
+
+  const getMenuItemGroup = () => {
+    return groups.map((group) => (
+      // eslint-disable-next-line react/jsx-key
+      <MenuItem key={group.key} value={group.key}>
+        {group.descricao}
+      </MenuItem>
+    ));
+  };
+
+  const handleGroupChange = (event) => {
+    setGroup(event.target.value);
+  };
 
   const handleDescricaoChange = (event) => {
     setDescricao(event.target.value);
@@ -90,6 +127,7 @@ export default function JobsForm(props) {
   const validate = () => {
     let validations = [];
     if (descricao === "") validations.push("Nome é obrigatório.");
+    if (group === "") validations.push("Seção é obrigatório.");
 
     setErrors(validations);
     return validations.length > 0;
@@ -104,9 +142,16 @@ export default function JobsForm(props) {
       };
 
       if (id === null) {
-        await firebase.database().ref(`/lista-telefones`).push().set(job);
+        await firebase
+          .database()
+          .ref(`/lista-telefones/${group}`)
+          .push()
+          .set(job);
       } else {
-        await firebase.database().ref(`/lista-telefones/${id}`).update(job);
+        await firebase
+          .database()
+          .ref(`/lista-telefones/${group}/${id}`)
+          .update(job);
       }
     } catch (error) {
       setErrors([error]);
@@ -126,6 +171,19 @@ export default function JobsForm(props) {
             </CardHeader>
             <CardBody>
               <GridContainer>
+                <GridItem xs={12} sm={12} md={6}>
+                  <FormControl className={classes.formControl}>
+                    <InputLabel id="select">Seção</InputLabel>
+                    <Select
+                      labelId="select"
+                      id="select"
+                      value={group}
+                      onChange={handleGroupChange}
+                    >
+                      {getMenuItemGroup()}
+                    </Select>
+                  </FormControl>
+                </GridItem>
                 <GridItem xs={12} sm={12} md={6}>
                   <CustomInput
                     labelText="Descrição"
