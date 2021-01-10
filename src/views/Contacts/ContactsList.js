@@ -63,7 +63,7 @@ class ContactsList extends React.Component {
         .database()
         .ref(`/voluntarios/${contact.key}/links`)
         .orderByValue()
-        .equalTo(`/lista-telefones/${group}/${office}`)
+        .equalTo(`/lista-telefones/${group}/${office}/${contact.key}`)
         .once("value", function (x) {
           let keys = Object.keys(x.val());
           keys.forEach((x) =>
@@ -132,6 +132,9 @@ class ContactsList extends React.Component {
   getOfficesGroup(selectedGroup) {
     let availableOffices = this.state.offices.filter(
       (x) => x.parent === selectedGroup
+    );
+    availableOffices = availableOffices.sort((a, b) =>
+      a.descricao.localeCompare(b.descricao)
     );
     this.setState({ availableOffices });
   }

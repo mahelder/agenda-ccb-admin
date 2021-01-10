@@ -28,7 +28,7 @@ class VolunteersList extends React.Component {
   }
 
   handleDelete(voluntary) {
-    if (window.confirm(`Deseja excluir o irmão ${voluntary.val()["name"]}?`)) {
+    if (window.confirm(`Deseja excluir o irmão ${voluntary.val()["nome"]}?`)) {
       firebase.database().ref(`/voluntarios/${voluntary.key}`).remove();
       this.loadVolunteers();
     }
@@ -51,6 +51,7 @@ class VolunteersList extends React.Component {
         </div>,
       ]);
     });
+    volunteers = volunteers.sort((a, b) => a[0].localeCompare(b[0]));
     this.setState({ volunteers });
   }
 

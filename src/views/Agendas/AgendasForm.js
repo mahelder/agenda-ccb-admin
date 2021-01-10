@@ -25,7 +25,8 @@ import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
-
+import Input from "@material-ui/core/Input";
+import Checkbox from "@material-ui/core/Checkbox";
 import DateFnsUtils from "@date-io/date-fns";
 
 import {
@@ -74,6 +75,22 @@ const monthNames = [
 
 const today = new Date();
 
+const agendasDescriptions = {
+  musicais: "Agenda Musical",
+  ministeriais: "Agenda Ministerial",
+};
+
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
+
 export default function AgendasForm(props) {
   const classes = useStyles();
   const [loading, setLoading] = React.useState(true);
@@ -86,7 +103,7 @@ export default function AgendasForm(props) {
   const [date, setDate] = React.useState(today);
   const [time, setTime] = React.useState(moment(today).format("HH:mm"));
   const [description, setDescription] = React.useState("");
-  const [type, setType] = React.useState("ministeriais");
+  const [type, setType] = React.useState(["ministeriais"]);
 
   React.useEffect(() => {
     async function fetchAgenda() {
@@ -100,7 +117,7 @@ export default function AgendasForm(props) {
       }
       setId(id);
       setMonth(month);
-      setType(type);
+      setType([type]);
 
       let snapshot = await firebase
         .database()
@@ -165,6 +182,8 @@ export default function AgendasForm(props) {
     if (place === "") validations.push("Local é obrigatório.");
     if (date === "") validations.push("Data da reunião é obrigatório.");
     if (time === "") validations.push("Horário da reunião é obrigatório.");
+    if (type.length === 0)
+      validations.push("Selecione em quais agendas quer publicar o evento.");
 
     setErrors(validations);
     return validations.length > 0;
@@ -182,17 +201,19 @@ export default function AgendasForm(props) {
         description: description,
       };
 
-      if (id === null)
-        await firebase
-          .database()
-          .ref(`/agendas/${type}/${month}`)
-          .push()
-          .set(agenda);
-      else
-        await firebase
-          .database()
-          .ref(`/agendas/${type}/${month}/${id}`)
-          .update(agenda);
+      type.forEach(async (t) => {
+        if (id === null)
+          await firebase
+            .database()
+            .ref(`/agendas/${t}/${month}`)
+            .push()
+            .set(agenda);
+        else
+          await firebase
+            .database()
+            .ref(`/agendas/${t}/${month}/${id}`)
+            .update(agenda);
+      });
     } catch (error) {
       setErrors([error]);
     }
@@ -290,18 +311,31 @@ export default function AgendasForm(props) {
               </GridContainer>
               <GridContainer>
                 <GridItem xs={12} sm={12} md={6}>
-                  <FormControl className={classes.formControl}>
+                  <FormControl
+                    className={classes.formControl}
+                    disabled={id !== null ? true : false}
+                  >
                     <InputLabel id="select">Agenda</InputLabel>
                     <Select
-                      labelId="select"
-                      id="select"
+                      labelId="demo-mutiple-name-label"
+                      id="demo-mutiple-name"
+                      multiple
                       value={type}
                       onChange={handleType}
+                      renderValue={(selected) =>
+                        selected.map((x) => agendasDescriptions[x]).join(", ")
+                      }
+                      input={<Input />}
+                      MenuProps={MenuProps}
                     >
                       <MenuItem value="ministeriais">
-                        Agenda Ministerial
+                        <Checkbox checked={type.indexOf("ministeriais") > -1} />
+                        <ListItemText primary="Agenda Ministerial" />
                       </MenuItem>
-                      <MenuItem value="musicais">Agenda Musical</MenuItem>
+                      <MenuItem value="musicais">
+                        <Checkbox checked={type.indexOf("musicais") > -1} />
+                        <ListItemText primary="Agenda Musical" />
+                      </MenuItem>
                     </Select>
                   </FormControl>
                 </GridItem>

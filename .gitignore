@@ -38,3 +38,4 @@ src/configFirebase.js
 documentation/
 
 .vscode/launch.json
+validador_links.js

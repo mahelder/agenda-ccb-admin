@@ -225,7 +225,7 @@ export default function ContactsForm() {
       }
       contact.links[
         `${officeGroup}`
-      ] = `/lista-telefones/${group}/${officeGroup}`;
+      ] = `/lista-telefones/${group}/${officeGroup}/${voluntary}`;
 
       await firebase
         .database()
@@ -235,7 +235,7 @@ export default function ContactsForm() {
       await firebase
         .database()
         .ref(`/voluntarios/${voluntary}/links/${officeGroup}`)
-        .set(`/lista-telefones/${group}/${officeGroup}`);
+        .set(`/lista-telefones/${group}/${officeGroup}/${voluntary}`);
     } catch (error) {
       setErrors([error]);
     }

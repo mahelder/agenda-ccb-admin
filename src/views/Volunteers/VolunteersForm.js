@@ -24,7 +24,8 @@ import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
-
+import Input from "@material-ui/core/Input";
+import Checkbox from "@material-ui/core/Checkbox";
 import firebase from "firebase";
 
 const styles = {
@@ -47,6 +48,17 @@ const styles = {
   },
 };
 
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
+
 const useStyles = makeStyles(styles);
 
 export default function VolunteersForm(props) {
@@ -59,6 +71,7 @@ export default function VolunteersForm(props) {
   const [phone1, setPhone1] = React.useState("");
   const [phone2, setPhone2] = React.useState("");
   const [common, setCommon] = React.useState("");
+  const [secondaryCommons, setSecondaryCommons] = React.useState([]);
   const [links, setLinks] = React.useState({});
   const [churches, setChurches] = React.useState([]);
 
@@ -79,6 +92,9 @@ export default function VolunteersForm(props) {
       setPhone1(snapshot.val()["telefone1"]);
       setPhone2(snapshot.val()["telefone2"]);
       setCommon(snapshot.val()["comum"]);
+      if (snapshot.val()["outrasComuns"] !== undefined) {
+        setSecondaryCommons(snapshot.val()["outrasComuns"].split(","));
+      }
       setLinks(snapshot.val()["links"]);
       setLoading(false);
     }
@@ -113,6 +129,10 @@ export default function VolunteersForm(props) {
     setCommon(event.target.value);
   };
 
+  const handleSecondaryCommonsChange = (event) => {
+    setSecondaryCommons(event.target.value);
+  };
+
   const getMenuItemChurches = () => {
     return churches.map((x, index) => {
       // eslint-disable-next-line react/jsx-key
@@ -126,6 +146,28 @@ export default function VolunteersForm(props) {
       return (
         <MenuItem key={index} value={x.name}>
           {x.name}
+        </MenuItem>
+      );
+    });
+  };
+
+  const getMenuItemChurchesMultiple = () => {
+    return churches.map((x, index) => {
+      // eslint-disable-next-line react/jsx-key
+      if (x.place !== "Franca - SP") {
+        return (
+          <MenuItem key={index} value={`${x.name} / ${x.place}`}>
+            <Checkbox
+              checked={secondaryCommons.indexOf(`${x.name} / ${x.place}`) > -1}
+            />
+            <ListItemText primary={`${x.name} / ${x.place}`} />
+          </MenuItem>
+        );
+      }
+      return (
+        <MenuItem key={index} value={x.name}>
+          <Checkbox checked={secondaryCommons.indexOf(`${x.name}`) > -1} />
+          <ListItemText primary={`${x.name}`} />
         </MenuItem>
       );
     });
@@ -160,6 +202,7 @@ export default function VolunteersForm(props) {
         telefone1: phone1,
         telefone2: phone2,
         comum: common,
+        outrasComuns: secondaryCommons.join(","),
         links: links,
       };
 
@@ -168,7 +211,7 @@ export default function VolunteersForm(props) {
       } else {
         await firebase.database().ref(`/voluntarios/${id}`).update(voluntary);
         for (let i in links) {
-          await firebase.database().ref(`/${links[i]}/${id}`).set(voluntary);
+          await firebase.database().ref(`/${links[i]}`).set(voluntary);
         }
       }
     } catch (error) {
@@ -241,6 +284,25 @@ export default function VolunteersForm(props) {
                       onChange={handleCommonChange}
                     >
                       {getMenuItemChurches()}
+                    </Select>
+                  </FormControl>
+                </GridItem>
+                <GridItem xs={12} sm={12} md={12}>
+                  <FormControl className={classes.formControl}>
+                    <InputLabel id="select">
+                      Outras Comuns Congregação
+                    </InputLabel>
+                    <Select
+                      labelId="select"
+                      id="select"
+                      multiple
+                      value={secondaryCommons}
+                      onChange={handleSecondaryCommonsChange}
+                      renderValue={(selected) => selected.join(", ")}
+                      input={<Input />}
+                      MenuProps={MenuProps}
+                    >
+                      {getMenuItemChurchesMultiple()}
                     </Select>
                   </FormControl>
                 </GridItem>
