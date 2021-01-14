@@ -220,6 +220,8 @@ export default function ContactsForm() {
     setLoading(true);
     try {
       let contact = volunteers.filter((x) => x.key === voluntary)[0].val();
+      contact.cargo = office;
+
       if (contact.links === undefined) {
         contact.links = {};
       }
@@ -282,6 +284,19 @@ export default function ContactsForm() {
                 </GridItem>
                 <GridItem xs={12} sm={12} md={6}>
                   <FormControl className={classes.formControl}>
+                    <InputLabel id="select">Cargo</InputLabel>
+                    <Select
+                      labelId="select"
+                      id="select"
+                      value={office}
+                      onChange={handleOfficeChange}
+                    >
+                      {getMenuItemOffice()}
+                    </Select>
+                  </FormControl>
+                </GridItem>
+                <GridItem xs={12} sm={12} md={6}>
+                  <FormControl className={classes.formControl}>
                     <InputLabel id="select">Voluntário</InputLabel>
                     <Select
                       labelId="select"
@@ -293,21 +308,6 @@ export default function ContactsForm() {
                     </Select>
                   </FormControl>
                 </GridItem>
-                {listFunctions.includes(availableOffices) && (
-                  <GridItem xs={12} sm={12} md={6}>
-                    <FormControl className={classes.formControl}>
-                      <InputLabel id="select">Cargo</InputLabel>
-                      <Select
-                        labelId="select"
-                        id="select"
-                        value={office}
-                        onChange={handleOfficeChange}
-                      >
-                        {getMenuItemOffice()}
-                      </Select>
-                    </FormControl>
-                  </GridItem>
-                )}
               </GridContainer>
             </CardBody>
             <CardFooter>

@@ -55,6 +55,9 @@ class ChurchesList extends React.Component {
         </div>,
       ]);
     });
+    churches = churches.sort(
+      (a, b) => a[1].localeCompare(b[1]) || a[0].localeCompare(b[0])
+    );
     this.setState({ churches });
   }
 
