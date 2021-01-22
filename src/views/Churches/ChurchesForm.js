@@ -58,6 +58,7 @@ export default function ChurchesForm(props) {
   const [cults, setCults] = React.useState("");
   const [location, setLocation] = React.useState("");
   const [rehearsals, setRehearsals] = React.useState("");
+  const [ordem, setOrdem] = React.useState(null);
   const [rehearsalsDescription, setRehearsalsDescription] = React.useState("");
   // const [ministers, setMinisters] = React.useState(null);
 
@@ -83,6 +84,10 @@ export default function ChurchesForm(props) {
         setRehearsalsDescription(snapshot.val()["rehearsals"]["description"]);
       }
 
+      if (snapshot.val()["order"]) {
+        setOrdem(snapshot.val()["order"]);
+      }
+
       setCults(snapshot.val()["cults"]);
       setLocation(snapshot.val()["location"]);
       setImg(snapshot.val()["imgUrl"]);
@@ -106,6 +111,10 @@ export default function ChurchesForm(props) {
 
   const handleLocationChange = (event) => {
     setLocation(event.target.value);
+  };
+
+  const handleOrdemChange = (event) => {
+    setOrdem(event.target.value);
   };
 
   const handleClose = () => {
@@ -173,6 +182,7 @@ export default function ChurchesForm(props) {
         // ministers: ministers,
         cults: cults,
         location: location,
+        order: ordem,
         rehearsals: {
           weekDay: rehearsals,
           description: rehearsalsDescription,
@@ -239,6 +249,20 @@ export default function ChurchesForm(props) {
                     inputProps={{
                       value: location,
                       onChange: handleLocationChange,
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={6}>
+                  <CustomInput
+                    labelText="Ordem"
+                    id="ordem"
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                    inputProps={{
+                      value: ordem,
+                      onChange: handleOrdemChange,
+                      type: "number",
                     }}
                   />
                 </GridItem>
