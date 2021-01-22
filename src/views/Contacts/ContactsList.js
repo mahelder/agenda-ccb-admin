@@ -93,25 +93,47 @@ class ContactsList extends React.Component {
       .ref(`/lista-telefones`)
       .once("value");
     entity.forEach((element) => {
-      groups.push({ key: element.key, descricao: element.val()["descricao"] });
+      groups.push({
+        key: element.key,
+        descricao: element.val()["descricao"],
+        order: element.val()["order"]
+          ? element.val()["order"]
+          : Number.MAX_SAFE_INTEGER,
+      });
       element.forEach((group) => {
         if (group.key !== "descricao") {
           offices.push({
             parent: element.key,
             key: group.key,
             descricao: group.val()["descricao"],
+            order: group.val()["order"]
+              ? group.val()["order"]
+              : Number.MAX_SAFE_INTEGER,
           });
           data[group.key] = [];
           group.forEach((contact) => {
-            if (contact.key !== "descricao") data[group.key].push(contact);
+            if (contact.key !== "descricao" && contact.key !== "order")
+              data[group.key].push(contact);
           });
-          data[group.key] = data[group.key].sort((a, b) =>
-            a.val().nome > b.val().nome ? 1 : -1
-          );
+          data[group.key] = data[group.key].sort((a, b) => {
+            let orderA = a.val().order
+              ? a.val().order
+              : Number.MAX_SAFE_INTEGER;
+
+            let orderB = b.val().order
+              ? b.val().order
+              : Number.MAX_SAFE_INTEGER;
+
+            if (orderA > orderB) return 1;
+            if (orderA < orderB) return -1;
+            return a.val().nome > b.val().nome ? 1 : -1;
+          });
         }
       });
 
       groups.sort(function (a, b) {
+        if (a.order > b.order) return 1;
+        if (a.order < b.order) return -1;
         return a.descricao > b.descricao ? 1 : -1;
       });
     });
@@ -133,9 +155,11 @@ class ContactsList extends React.Component {
     let availableOffices = this.state.offices.filter(
       (x) => x.parent === selectedGroup
     );
-    availableOffices = availableOffices.sort((a, b) =>
-      a.descricao.localeCompare(b.descricao)
-    );
+    availableOffices = availableOffices.sort((a, b) => {
+      if (a.order > b.order) return 1;
+      if (a.order < b.order) return -1;
+      return a.descricao.localeCompare(b.descricao);
+    });
     this.setState({ availableOffices });
   }
 
@@ -150,7 +174,8 @@ class ContactsList extends React.Component {
         x.val()["comum"],
       ];
 
-      if (listFunctions.includes(selectedOffice)) columns.push(x.val()["cargo"]);
+      if (listFunctions.includes(selectedOffice))
+        columns.push(x.val()["cargo"]);
 
       columns.push(
         <div key={x.key}>

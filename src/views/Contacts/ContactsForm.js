@@ -23,6 +23,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import Dialog from "@material-ui/core/Dialog";
 import Snackbar from "@material-ui/core/Snackbar";
+import CustomInput from "components/CustomInput/CustomInput.js";
 
 import firebase from "firebase";
 
@@ -68,6 +69,7 @@ export default function ContactsForm() {
   const [offices, setOffices] = React.useState([]);
   const [availableOffices, setAvailableOffices] = React.useState([]);
   const [officeGroup, setOfficeGroup] = React.useState("");
+  const [ordem, setOrdem] = React.useState(null);
 
   React.useEffect(() => {
     async function loadGroups() {
@@ -84,13 +86,21 @@ export default function ContactsForm() {
         groups.push({
           key: element.key,
           descricao: element.val()["descricao"],
+          order: element.val()["order"]
+            ? element.val()["order"]
+            : Number.MAX_SAFE_INTEGER,
         });
         element.forEach((office) => {
-          offices.push({
-            parent: element.key,
-            key: office.key,
-            descricao: office.val()["descricao"],
-          });
+          if (office.key !== "order" && office.key !== "descricao") {
+            offices.push({
+              parent: element.key,
+              key: office.key,
+              descricao: office.val()["descricao"],
+              order: office.val()["order"]
+                ? office.val()["order"]
+                : Number.MAX_SAFE_INTEGER,
+            });
+          }
         });
       });
 
@@ -105,10 +115,14 @@ export default function ContactsForm() {
       });
 
       groups.sort(function (a, b) {
+        if (a.order > b.order) return 1;
+        if (a.order < b.order) return -1;
         return a.descricao > b.descricao ? 1 : -1;
       });
 
       offices.sort(function (a, b) {
+        if (a.order > b.order) return 1;
+        if (a.order < b.order) return -1;
         return a.descricao > b.descricao ? 1 : -1;
       });
 
@@ -178,6 +192,10 @@ export default function ContactsForm() {
     getAvailableOfficeGroup(event.target.value);
   };
 
+  const handleOrdemChange = (event) => {
+    setOrdem(event.target.value);
+  };
+
   const handleVoluntaryChange = (event) => {
     setVoluntary(event.target.value);
   };
@@ -228,6 +246,8 @@ export default function ContactsForm() {
       contact.links[
         `${officeGroup}`
       ] = `/lista-telefones/${group}/${officeGroup}/${voluntary}`;
+
+      contact.order = ordem;
 
       await firebase
         .database()
@@ -307,6 +327,20 @@ export default function ContactsForm() {
                       {getMenuItemVoluntary()}
                     </Select>
                   </FormControl>
+                </GridItem>
+                <GridItem xs={12} sm={12} md={6}>
+                  <CustomInput
+                    labelText="Ordem"
+                    id="ordem"
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                    inputProps={{
+                      value: ordem,
+                      onChange: handleOrdemChange,
+                      type: "number",
+                    }}
+                  />
                 </GridItem>
               </GridContainer>
             </CardBody>
