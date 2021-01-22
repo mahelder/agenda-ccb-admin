@@ -56,6 +56,7 @@ export default function JobsForm(props) {
   const [errors, setErrors] = React.useState([]);
   const [id, setId] = React.useState(null);
   const [descricao, setDescricao] = React.useState("");
+  const [ordem, setOrdem] = React.useState(null);
   const [groups, setGroups] = React.useState([]);
   const [group, setGroup] = React.useState("");
 
@@ -89,6 +90,10 @@ export default function JobsForm(props) {
           .once("value");
 
         setDescricao(snapshot.val()["descricao"]);
+
+        if (snapshot.val()["order"]) {
+          setOrdem(snapshot.val()["order"]);
+        }
       }
 
       setLoading(false);
@@ -112,6 +117,10 @@ export default function JobsForm(props) {
 
   const handleDescricaoChange = (event) => {
     setDescricao(event.target.value);
+  };
+
+  const handleOrdemChange = (event) => {
+    setOrdem(event.target.value);
   };
 
   const handleClose = () => {
@@ -139,6 +148,7 @@ export default function JobsForm(props) {
     try {
       let job = {
         descricao: descricao,
+        order: ordem,
       };
 
       if (id === null) {
@@ -195,6 +205,20 @@ export default function JobsForm(props) {
                       value: descricao,
                       onChange: handleDescricaoChange,
                       required: true,
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={6}>
+                  <CustomInput
+                    labelText="Ordem"
+                    id="ordem"
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                    inputProps={{
+                      value: ordem,
+                      onChange: handleOrdemChange,
+                      type: "number",
                     }}
                   />
                 </GridItem>

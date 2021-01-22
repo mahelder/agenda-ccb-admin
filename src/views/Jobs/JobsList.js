@@ -93,12 +93,16 @@ class JobsList extends React.Component {
             Excluir
           </a>
         </div>,
+        x["order"],
       ]);
     });
 
     availableJobs.sort(function (a, b) {
+      if (a[2] > b[2]) return 1;
+      if (a[2] < b[2]) return -1;
       return a[0] > b[0] ? 1 : -1;
     });
+    availableJobs = availableJobs.map((x) => x.slice(0, -1));
 
     this.setState({ availableJobs });
   }
@@ -119,6 +123,9 @@ class JobsList extends React.Component {
             key: group.key,
             snapshot: group,
             descricao: group.val()["descricao"],
+            order: group.val()["order"]
+              ? group.val()["order"]
+              : Number.MAX_SAFE_INTEGER,
           });
         }
       });
