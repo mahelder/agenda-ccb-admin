@@ -117,11 +117,11 @@ class ContactsList extends React.Component {
           });
           data[group.key] = data[group.key].sort((a, b) => {
             let orderA = a.val().order
-              ? a.val().order
+              ? parseInt(a.val().order)
               : Number.MAX_SAFE_INTEGER;
 
             let orderB = b.val().order
-              ? b.val().order
+              ? parseInt(b.val().order)
               : Number.MAX_SAFE_INTEGER;
 
             if (orderA > orderB) return 1;
@@ -132,8 +132,8 @@ class ContactsList extends React.Component {
       });
 
       groups.sort(function (a, b) {
-        if (a.order > b.order) return 1;
-        if (a.order < b.order) return -1;
+        if (parseInt(a.order) > parseInt(b.order)) return 1;
+        if (parseInt(a.order) < parseInt(b.order)) return -1;
         return a.descricao > b.descricao ? 1 : -1;
       });
     });
@@ -156,8 +156,8 @@ class ContactsList extends React.Component {
       (x) => x.parent === selectedGroup
     );
     availableOffices = availableOffices.sort((a, b) => {
-      if (a.order > b.order) return 1;
-      if (a.order < b.order) return -1;
+      if (parseInt(a.order) > parseInt(b.order)) return 1;
+      if (parseInt(a.order) < parseInt(b.order)) return -1;
       return a.descricao.localeCompare(b.descricao);
     });
     this.setState({ availableOffices });
@@ -179,6 +179,12 @@ class ContactsList extends React.Component {
 
       columns.push(
         <div key={x.key}>
+          <a
+            href={`/admin/editar-contato/${selectedGroup}/${selectedOffice}/${x.key}`}
+          >
+            Editar
+          </a>{" "}
+          |{" "}
           <a
             href="#"
             type="button"

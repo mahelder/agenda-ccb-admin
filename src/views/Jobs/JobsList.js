@@ -98,8 +98,8 @@ class JobsList extends React.Component {
     });
 
     availableJobs.sort(function (a, b) {
-      if (a[2] > b[2]) return 1;
-      if (a[2] < b[2]) return -1;
+      if (parseInt(a[2]) > parseInt(b[2])) return 1;
+      if (parseInt(a[2]) < parseInt(b[2])) return -1;
       return a[0] > b[0] ? 1 : -1;
     });
     availableJobs = availableJobs.map((x) => x.slice(0, -1));

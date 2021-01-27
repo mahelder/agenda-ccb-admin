@@ -58,7 +58,7 @@ export default function ChurchesForm(props) {
   const [cults, setCults] = React.useState("");
   const [location, setLocation] = React.useState("");
   const [rehearsals, setRehearsals] = React.useState("");
-  const [ordem, setOrdem] = React.useState(null);
+  const [ordem, setOrdem] = React.useState("");
   const [rehearsalsDescription, setRehearsalsDescription] = React.useState("");
   // const [ministers, setMinisters] = React.useState(null);
 

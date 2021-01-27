@@ -56,7 +56,7 @@ export default function JobsForm(props) {
   const [errors, setErrors] = React.useState([]);
   const [id, setId] = React.useState(null);
   const [descricao, setDescricao] = React.useState("");
-  const [ordem, setOrdem] = React.useState(null);
+  const [ordem, setOrdem] = React.useState("");
   const [groups, setGroups] = React.useState([]);
   const [group, setGroup] = React.useState("");
 

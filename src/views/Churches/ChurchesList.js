@@ -59,8 +59,8 @@ class ChurchesList extends React.Component {
       ]);
     });
     churches = churches.sort((a, b) => {
-      if (a[5] > b[5]) return 1;
-      if (a[5] < b[5]) return -1;
+      if (parseInt(a[5]) > parseInt(b[5])) return 1;
+      if (parseInt(a[5]) < parseInt(b[5])) return -1;
       return a[1].localeCompare(b[1]) || a[0].localeCompare(b[0]);
     });
     churches = churches.map((x) => x.slice(0, -1));

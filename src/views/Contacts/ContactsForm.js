@@ -56,7 +56,7 @@ const listFunctions = [
   "conselho-fiscal",
 ];
 
-export default function ContactsForm() {
+export default function ContactsForm(props) {
   const classes = useStyles();
   const [loading, setLoading] = React.useState(true);
   const [success, setSucess] = React.useState(false);
@@ -69,9 +69,43 @@ export default function ContactsForm() {
   const [offices, setOffices] = React.useState([]);
   const [availableOffices, setAvailableOffices] = React.useState([]);
   const [officeGroup, setOfficeGroup] = React.useState("");
-  const [ordem, setOrdem] = React.useState(null);
+  const [ordem, setOrdem] = React.useState("");
+  const [edit, setEdit] = React.useState(false);
 
   React.useEffect(() => {
+    getAvailableOfficeGroup(group);
+  }, [group, offices]);
+
+  React.useEffect(() => {
+    async function fetchContact() {
+      let secao = props.match.params.secao;
+      let cargo = props.match.params.cargo;
+      let id = props.match.params.id;
+
+      if (id === undefined) {
+        setLoading(false);
+        return;
+      }
+
+      setGroup(secao);
+      setOfficeGroup(cargo);
+      setVoluntary(id);
+      setEdit(true);
+
+      let snapshot = await firebase
+        .database()
+        .ref(`/lista-telefones/${secao}/${cargo}/${id}`)
+        .once("value");
+
+      if (snapshot.val()["order"] !== undefined) {
+        setOrdem(snapshot.val()["order"]);
+      }
+      if (snapshot.val()["cargo"] !== undefined) {
+        setOffice(snapshot.val()["cargo"]);
+      }
+      setLoading(false);
+    }
+
     async function loadGroups() {
       let groups = [];
       let offices = [];
@@ -115,25 +149,29 @@ export default function ContactsForm() {
       });
 
       groups.sort(function (a, b) {
-        if (a.order > b.order) return 1;
-        if (a.order < b.order) return -1;
+        if (parseInt(a.order) > parseInt(b.order)) return 1;
+        if (parseInt(a.order) < parseInt(b.order)) return -1;
         return a.descricao > b.descricao ? 1 : -1;
       });
 
       offices.sort(function (a, b) {
-        if (a.order > b.order) return 1;
-        if (a.order < b.order) return -1;
+        if (parseInt(a.order) > parseInt(b.order)) return 1;
+        if (parseInt(a.order) < parseInt(b.order)) return -1;
         return a.descricao > b.descricao ? 1 : -1;
       });
 
       setGroups(groups);
       setOffices(offices);
       setVolunteers(persons);
-      setLoading(false);
     }
 
     loadGroups();
-  }, []);
+    fetchContact();
+  }, [
+    props.match.params.secao,
+    props.match.params.cargo,
+    props.match.params.id,
+  ]);
 
   const getMenuItemGroup = () => {
     return groups.map((group) => (
@@ -172,7 +210,9 @@ export default function ContactsForm() {
       "2º Vice-Secretário",
       "3º Vice-Secretário",
       "Tesoureiro",
-      "Vice-Tesoureiro",
+      "1º Vice-Tesoureiro",
+      "2º Vice-Tesoureiro",
+      "3º Vice-Tesoureiro",
       "Auxiliar",
       "Contador",
       "Informática",
@@ -183,13 +223,14 @@ export default function ContactsForm() {
     ];
     return offices.map((x) => (
       // eslint-disable-next-line react/jsx-key
-      <MenuItem value={x}>{x}</MenuItem>
+      <MenuItem key={x} value={x}>
+        {x}
+      </MenuItem>
     ));
   };
 
   const handleGroupChange = (event) => {
     setGroup(event.target.value);
-    getAvailableOfficeGroup(event.target.value);
   };
 
   const handleOrdemChange = (event) => {
@@ -277,7 +318,7 @@ export default function ContactsForm() {
             <CardBody>
               <GridContainer>
                 <GridItem xs={12} sm={12} md={6}>
-                  <FormControl className={classes.formControl}>
+                  <FormControl className={classes.formControl} disabled={edit}>
                     <InputLabel id="select">Seção</InputLabel>
                     <Select
                       labelId="select"
@@ -290,7 +331,7 @@ export default function ContactsForm() {
                   </FormControl>
                 </GridItem>
                 <GridItem xs={12} sm={12} md={6}>
-                  <FormControl className={classes.formControl}>
+                  <FormControl className={classes.formControl} disabled={edit}>
                     <InputLabel id="select">Cargo/Função</InputLabel>
                     <Select
                       labelId="select"
@@ -316,7 +357,7 @@ export default function ContactsForm() {
                   </FormControl>
                 </GridItem>
                 <GridItem xs={12} sm={12} md={6}>
-                  <FormControl className={classes.formControl}>
+                  <FormControl className={classes.formControl} disabled={edit}>
                     <InputLabel id="select">Voluntário</InputLabel>
                     <Select
                       labelId="select"

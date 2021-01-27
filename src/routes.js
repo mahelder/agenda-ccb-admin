@@ -86,6 +86,15 @@ const dashboardRoutes = [
     layout: "/admin",
   },
   {
+    path: "/editar-contato/:secao/:cargo/:id",
+    name: "Editar Contato",
+    rtlName: "ملف تعريفي للمستخدم",
+    icon: "location_city",
+    component: ContactsForm,
+    invisible: true,
+    layout: "/admin",
+  },
+  {
     path: "/voluntarios",
     name: "Voluntários",
     icon: Person,
