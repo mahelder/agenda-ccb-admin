@@ -41,6 +41,7 @@ class ChurchesList extends React.Component {
     let entity = await firebase.database().ref(`/churches`).once("value");
     entity.forEach((element) => {
       churches.push([
+        element.val()["code"] ? element.val()["code"] : "",
         element.val()["name"],
         element.val()["place"],
         element.val()["cults"],
@@ -59,9 +60,9 @@ class ChurchesList extends React.Component {
       ]);
     });
     churches = churches.sort((a, b) => {
-      if (parseInt(a[5]) > parseInt(b[5])) return 1;
-      if (parseInt(a[5]) < parseInt(b[5])) return -1;
-      return a[1].localeCompare(b[1]) || a[0].localeCompare(b[0]);
+      if (parseInt(a[6]) > parseInt(b[6])) return 1;
+      if (parseInt(a[6]) < parseInt(b[6])) return -1;
+      return a[2].localeCompare(b[2]) || a[1].localeCompare(b[1]);
     });
     churches = churches.map((x) => x.slice(0, -1));
     this.setState({ churches });
@@ -79,7 +80,14 @@ class ChurchesList extends React.Component {
               {this.state.churches.length > 0 && (
                 <Table
                   tableHeaderColor="primary"
-                  tableHead={["Bairro", "Localidade", "Cultos", "Ensaios", ""]}
+                  tableHead={[
+                    "Código",
+                    "Bairro",
+                    "Localidade",
+                    "Cultos",
+                    "Ensaios",
+                    "",
+                  ]}
                   tableData={this.state.churches}
                 />
               )}

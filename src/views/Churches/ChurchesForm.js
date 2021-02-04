@@ -59,6 +59,7 @@ export default function ChurchesForm(props) {
   const [location, setLocation] = React.useState("");
   const [rehearsals, setRehearsals] = React.useState("");
   const [ordem, setOrdem] = React.useState("");
+  const [churchCode, setChurchCode] = React.useState("");
   const [rehearsalsDescription, setRehearsalsDescription] = React.useState("");
   // const [ministers, setMinisters] = React.useState(null);
 
@@ -88,6 +89,10 @@ export default function ChurchesForm(props) {
         setOrdem(snapshot.val()["order"]);
       }
 
+      if (snapshot.val()["code"]) {
+        setChurchCode(snapshot.val()["code"]);
+      }
+
       setCults(snapshot.val()["cults"]);
       setLocation(snapshot.val()["location"]);
       setImg(snapshot.val()["imgUrl"]);
@@ -115,6 +120,10 @@ export default function ChurchesForm(props) {
 
   const handleOrdemChange = (event) => {
     setOrdem(event.target.value);
+  };
+
+  const handleCodeChange = (event) => {
+    setChurchCode(event.target.value);
   };
 
   const handleClose = () => {
@@ -183,6 +192,7 @@ export default function ChurchesForm(props) {
         cults: cults,
         location: location,
         order: ordem,
+        code: churchCode,
         rehearsals: {
           weekDay: rehearsals,
           description: rehearsalsDescription,
@@ -239,7 +249,7 @@ export default function ChurchesForm(props) {
                     }}
                   />
                 </GridItem>
-                <GridItem xs={12} sm={12} md={6}>
+                <GridItem xs={12} sm={12} md={12}>
                   <CustomInput
                     labelText="Link Localização"
                     id="location"
@@ -263,6 +273,19 @@ export default function ChurchesForm(props) {
                       value: ordem,
                       onChange: handleOrdemChange,
                       type: "number",
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={6}>
+                  <CustomInput
+                    labelText="Código Casa de Oração"
+                    id="code"
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                    inputProps={{
+                      value: churchCode,
+                      onChange: handleCodeChange,
                     }}
                   />
                 </GridItem>
