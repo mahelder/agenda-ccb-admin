@@ -220,6 +220,9 @@ export default function ContactsForm(props) {
       "Suplente",
       "Titular",
       "Procurador",
+      "Encarregado de Manutenção",
+      "Responsável pelo Livro Azul",
+      "Encarregado da Limpeza",
     ];
     return offices.map((x) => (
       // eslint-disable-next-line react/jsx-key
