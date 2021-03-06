@@ -59,48 +59,80 @@ export default function JobsForm(props) {
   const [ordem, setOrdem] = React.useState("");
   const [groups, setGroups] = React.useState([]);
   const [group, setGroup] = React.useState("");
+  const [administracoes, setAdministracoes] = React.useState([]);
+  const [administracao, setAdministracao] = React.useState("");
 
   React.useEffect(() => {
-    async function fetchJob() {
+    
+    async function fetchAdministracoes() {
       let id = props.match.params.id;
+      let admin = props.match.params.admin;
       let secao = props.match.params.secao;
 
       let entity = await firebase
         .database()
-        .ref(`/lista-telefones`)
+        .ref(`/regionais/ribeirao-preto/administracoes`)
         .once(`value`);
 
-      let groups = [];
+      let administracoes = [];
 
       entity.forEach((element) => {
-        groups.push({
+        administracoes.push({
           key: element.key,
-          descricao: element.val()["descricao"],
+          descricao: element.val(),
         });
       });
 
-      setGroups(groups);
-      if (id !== undefined && secao !== undefined) {
-        setId(id);
-        setGroup(secao);
-
-        let snapshot = await firebase
-          .database()
-          .ref(`/lista-telefones/${secao}/${id}`)
-          .once("value");
-
-        setDescricao(snapshot.val()["descricao"]);
-
-        if (snapshot.val()["order"]) {
-          setOrdem(snapshot.val()["order"]);
-        }
+      setAdministracoes(administracoes);
+      if (id !== undefined && secao !== undefined && admin !== undefined) {
+        setAdministracao(admin);
+        await fetchJob(admin, secao, id)
       }
-
-      setLoading(false);
     }
 
-    fetchJob();
-  }, [props.match.params.id, props.match.params.secao]);
+    fetchAdministracoes();
+  }, [props.match.params.id, props.match.params.secao, props.match.params.admin]);
+
+  React.useEffect(() => {
+    fetchJob(administracao, undefined, undefined)
+  }, [administracao])
+
+  async function fetchJob(admin, secao, id) {
+    setLoading(true);
+
+    let entity = await firebase
+      .database()
+      .ref(`/regionais/ribeirao-preto/dados/${admin}/lista-telefones`)
+      .once(`value`);
+
+    let groups = [];
+
+    entity.forEach((element) => {
+      groups.push({
+        key: element.key,
+        descricao: element.val()["descricao"],
+      });
+    });
+
+    setGroups(groups);
+    if (id !== undefined && secao !== undefined) {
+      setId(id);
+      setGroup(secao);
+
+      let snapshot = await firebase
+        .database()
+        .ref(`/regionais/ribeirao-preto/dados/${admin}/lista-telefones/${secao}/${id}`)
+        .once("value");
+
+      setDescricao(snapshot.val()["descricao"]);
+
+      if (snapshot.val()["order"]) {
+        setOrdem(snapshot.val()["order"]);
+      }
+    }
+
+    setLoading(false);
+  }
 
   const getMenuItemGroup = () => {
     return groups.map((group) => (
@@ -109,6 +141,19 @@ export default function JobsForm(props) {
         {group.descricao}
       </MenuItem>
     ));
+  };
+
+  const getMenuItemAdministracao = () => {
+    return administracoes.map((administracao) => (
+      // eslint-disable-next-line react/jsx-key
+      <MenuItem key={administracao.key} value={administracao.key}>
+        {administracao.descricao}
+      </MenuItem>
+    ));
+  };
+
+  const handleAdministracaoChange = (event) => {
+    setAdministracao(event.target.value);
   };
 
   const handleGroupChange = (event) => {
@@ -137,6 +182,7 @@ export default function JobsForm(props) {
     let validations = [];
     if (descricao === "") validations.push("Nome é obrigatório.");
     if (group === "") validations.push("Seção é obrigatório.");
+    if (administracao === "") validations.push("Administração é obrigatório.");
 
     setErrors(validations);
     return validations.length > 0;
@@ -154,13 +200,13 @@ export default function JobsForm(props) {
       if (id === null) {
         await firebase
           .database()
-          .ref(`/lista-telefones/${group}`)
+          .ref(`/regionais/ribeirao-preto/dados/${administracao}/lista-telefones/${group}`)
           .push()
           .set(job);
       } else {
         await firebase
           .database()
-          .ref(`/lista-telefones/${group}/${id}`)
+          .ref(`/regionais/ribeirao-preto/dados/${administracao}/lista-telefones/${group}/${id}`)
           .update(job);
       }
     } catch (error) {
@@ -181,6 +227,19 @@ export default function JobsForm(props) {
             </CardHeader>
             <CardBody>
               <GridContainer>
+              <GridItem xs={12} sm={12} md={6}>
+                  <FormControl className={classes.formControl}>
+                    <InputLabel id="select">Administração</InputLabel>
+                    <Select
+                      labelId="select"
+                      id="select"
+                      value={administracao}
+                      onChange={handleAdministracaoChange}
+                    >
+                      {getMenuItemAdministracao()}
+                    </Select>
+                  </FormControl>
+                </GridItem>
                 <GridItem xs={12} sm={12} md={6}>
                   <FormControl className={classes.formControl}>
                     <InputLabel id="select">Seção</InputLabel>

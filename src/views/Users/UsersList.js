@@ -39,7 +39,7 @@ class UsersList extends React.Component {
     let entity = await firebase.database().ref(`/users`).once("value");
     entity.forEach((element) => {
       users.push([
-        element.val(),
+        element.val().email,
         <div key={element.key}>
           <a href="#" type="button" onClick={() => this.handleDelete(element)}>
             Excluir

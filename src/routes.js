@@ -161,7 +161,7 @@ const dashboardRoutes = [
     layout: "/admin",
   },
   {
-    path: "/editar-cargo/:secao/:id",
+    path: "/editar-cargo/:admin/:secao/:id",
     name: "Editar Cargo",
     rtlName: "ملف تعريفي للمستخدم",
     icon: "work",

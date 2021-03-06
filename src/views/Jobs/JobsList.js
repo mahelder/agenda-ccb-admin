@@ -10,6 +10,8 @@ import InputLabel from "@material-ui/core/InputLabel";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import Backdrop from "@material-ui/core/Backdrop";
 
 import firebase from "firebase";
 
@@ -27,6 +29,9 @@ class JobsList extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      loading: true,
+      administracoes: [],
+      adminitracaoSelecionada: "",
       groups: [],
       selectedGroup: "",
       jobs: [],
@@ -35,7 +40,7 @@ class JobsList extends React.Component {
   }
 
   componentDidMount() {
-    this.loadJobs();
+    this.loadAdministracoes();
   }
 
   handleNew(event) {
@@ -52,17 +57,31 @@ class JobsList extends React.Component {
           if (links[key] === `/lista-telefones/${job.parent}/${job.key}`) {
             firebase
               .database()
-              .ref(`/voluntarios/${voluntary.key}/links/${key}`)
+              .ref(`/regionais/ribeirao-preto/dados/${this.state.adminitracaoSelecionada}/voluntarios/${voluntary.key}/links/${key}`)
               .remove();
           }
         });
       });
       firebase
         .database()
-        .ref(`/lista-telefones/${job.parent}/${job.key}`)
+        .ref(`/regionais/ribeirao-preto/dados/${this.state.adminitracaoSelecionada}/lista-telefones/${job.parent}/${job.key}`)
         .remove();
       await this.loadJobs();
     }
+  }
+
+  getMenuItemAdministracao() {
+    return this.state.administracoes.map((administracao) => (
+      // eslint-disable-next-line react/jsx-key
+      <MenuItem key={administracao.key} value={administracao.key}>
+        {administracao.descricao}
+      </MenuItem>
+    ));
+  }
+
+  handleAdministracao(event) {
+    this.setState({ adminitracaoSelecionada: event.target.value });
+    this.loadJobs(event.target.value);
   }
 
   getMenuItemGroup() {
@@ -88,7 +107,7 @@ class JobsList extends React.Component {
       availableJobs.push([
         x["descricao"],
         <div key={x.key}>
-          <a href={`/admin/editar-cargo/${x.parent}/${x.key}`}>Editar</a> |{" "}
+          <a href={`/admin/editar-cargo/${this.state.adminitracaoSelecionada}/${x.parent}/${x.key}`}>Editar</a> |{" "}
           <a href="#" type="button" onClick={() => this.handleDelete(x)}>
             Excluir
           </a>
@@ -107,12 +126,31 @@ class JobsList extends React.Component {
     this.setState({ availableJobs });
   }
 
-  async loadJobs() {
-    let jobs = [];
-    let groups = [];
+  async loadAdministracoes() {
+    let administracoes = [];
+    this.setState({ loading: true });
+
     let entity = await firebase
       .database()
-      .ref(`/lista-telefones`)
+      .ref(`/regionais/ribeirao-preto/administracoes`)
+      .once("value");
+
+    entity.forEach((element) => {
+      administracoes.push({ key: element.key, descricao: element.val() });
+    });
+
+    this.setState({ administracoes, loading: false });
+  }
+
+  async loadJobs(administracao) {
+    let jobs = [];
+    let groups = [];
+
+    this.setState({ loading: true });
+
+    let entity = await firebase
+      .database()
+      .ref(`/regionais/ribeirao-preto/dados/${administracao}/lista-telefones`)
       .once("value");
     entity.forEach((element) => {
       groups.push({ key: element.key, descricao: element.val()["descricao"] });
@@ -131,16 +169,32 @@ class JobsList extends React.Component {
       });
     });
 
-    this.setState({ jobs, groups });
+    this.setState({ jobs, groups, loading: false });
   }
 
   render() {
     return (
       <GridContainer>
+        <Backdrop style={styles.backdrop} open={this.state.loading}>
+          <CircularProgress color="inherit" />
+        </Backdrop>
         <GridItem xs={12} sm={12} md={12}>
           <Button type="button" color="info" onClick={this.handleNew}>
             Adicionar
           </Button>
+        </GridItem>
+        <GridItem xs={12} sm={12} md={5}>
+          <FormControl style={styles.formControl}>
+            <InputLabel id="select">Administração</InputLabel>
+            <Select
+              labelId="select"
+              id="select"
+              value={this.state.adminitracaoSelecionada}
+              onChange={(event) => this.handleAdministracao(event)}
+            >
+              {this.getMenuItemAdministracao()}
+            </Select>
+          </FormControl>
         </GridItem>
         <GridItem xs={12} sm={12} md={5}>
           <FormControl style={styles.formControl}>
