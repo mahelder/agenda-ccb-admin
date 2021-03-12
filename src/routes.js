@@ -111,7 +111,7 @@ const dashboardRoutes = [
     layout: "/admin",
   },
   {
-    path: "/editar-voluntario/:id",
+    path: "/editar-voluntario/:admin/:id",
     name: "Editar Voluntário",
     rtlName: "ملف تعريفي للمستخدم",
     icon: Person,

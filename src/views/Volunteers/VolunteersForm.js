@@ -74,44 +74,86 @@ export default function VolunteersForm(props) {
   const [secondaryCommons, setSecondaryCommons] = React.useState([]);
   const [links, setLinks] = React.useState({});
   const [churches, setChurches] = React.useState([]);
+  const [administracoes, setAdministracoes] = React.useState([]);
+  const [administracao, setAdministracao] = React.useState("");
 
   React.useEffect(() => {
-    async function fetchVoluntary() {
+    async function fetchAdministracoes() {
       let id = props.match.params.id;
-      if (id === undefined) {
-        setLoading(false);
-        return;
-      }
-      setId(id);
-      let snapshot = await firebase
+      let admin = props.match.params.admin;
+
+      let entity = await firebase
         .database()
-        .ref(`/voluntarios/${id}`)
-        .once("value");
+        .ref(`/regionais/ribeirao-preto/administracoes`)
+        .once(`value`);
 
-      setName(snapshot.val()["nome"]);
-      setPhone1(snapshot.val()["telefone1"]);
-      setPhone2(snapshot.val()["telefone2"]);
-      setCommon(snapshot.val()["comum"]);
-      if (snapshot.val()["outrasComuns"] !== undefined) {
-        setSecondaryCommons(snapshot.val()["outrasComuns"].split(","));
-      }
-      setLinks(snapshot.val()["links"]);
-      setLoading(false);
-    }
+      let administracoes = [];
 
-    async function fetchChurches() {
-      let snapshot = await firebase.database().ref(`/churches`).once("value");
-      let churches = [];
-      snapshot.forEach((x) => {
-        churches.push({ name: x.val()["name"], place: x.val()["place"] });
+      entity.forEach((element) => {
+        administracoes.push({
+          key: element.key,
+          descricao: element.val(),
+        });
       });
 
-      setChurches(churches);
+      setAdministracoes(administracoes);
+      if (id !== undefined && admin !== undefined) {
+        setAdministracao(admin);
+        setId(id);
+        await fetchVoluntary(admin, id);
+      }
     }
 
-    fetchChurches();
-    fetchVoluntary();
-  }, [props.match.params.id]);
+    fetchAdministracoes();
+  }, [props.match.params.id, props.match.params.admin]);
+
+  React.useEffect(() => {
+    fetchChurches(administracao);
+  }, [administracao]);
+
+  async function fetchChurches(admin) {
+    setLoading(true);
+    let snapshot = await firebase.database().ref(`/regionais/ribeirao-preto/dados/${admin}/churches`).once("value");
+    let churches = [];
+    snapshot.forEach((x) => {
+      churches.push({ name: x.val()["name"], place: x.val()["place"] });
+    });
+
+    setChurches(churches);
+    setLoading(false);
+  }
+
+  async function fetchVoluntary(admin, id) {
+    setLoading(true);
+
+    let snapshot = await firebase
+      .database()
+      .ref(`/regionais/ribeirao-preto/dados/${admin}/voluntarios/${id}`)
+      .once("value");
+
+    setName(snapshot.val()["nome"]);
+    setPhone1(snapshot.val()["telefone1"]);
+    setPhone2(snapshot.val()["telefone2"]);
+    setCommon(snapshot.val()["comum"]);
+    if (snapshot.val()["outrasComuns"] !== undefined) {
+      setSecondaryCommons(snapshot.val()["outrasComuns"].split(","));
+    }
+    setLinks(snapshot.val()["links"]);
+    setLoading(false);
+  }
+
+  const getMenuItemAdministracao = () => {
+    return administracoes.map((administracao) => (
+      // eslint-disable-next-line react/jsx-key
+      <MenuItem key={administracao.key} value={administracao.key}>
+        {administracao.descricao}
+      </MenuItem>
+    ));
+  };
+
+  const handleAdministracaoChange = (event) => {
+    setAdministracao(event.target.value);
+  };
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -188,6 +230,7 @@ export default function VolunteersForm(props) {
     if (name === "") validations.push("Nome é obrigatório.");
     if (phone1 === "") validations.push("Telefone é obrigatório.");
     if (common === "") validations.push("Comum é obrigatório.");
+    if (administracao === "") validations.push("Administração é obrigatório.");
 
     setErrors(validations);
     return validations.length > 0;
@@ -207,11 +250,11 @@ export default function VolunteersForm(props) {
       };
 
       if (id === null) {
-        await firebase.database().ref(`/voluntarios`).push().set(voluntary);
+        await firebase.database().ref(`/regionais/ribeirao-preto/dados/${administracao}/voluntarios`).push().set(voluntary);
       } else {
-        await firebase.database().ref(`/voluntarios/${id}`).update(voluntary);
+        await firebase.database().ref(`/regionais/ribeirao-preto/dados/${administracao}/voluntarios/${id}`).update(voluntary);
         for (let i in links) {
-          await firebase.database().ref(`/${links[i]}`).set(voluntary);
+          await firebase.database().ref(`/regionais/ribeirao-preto/dados/${administracao}/${links[i]}`).set(voluntary);
         }
       }
     } catch (error) {
@@ -231,6 +274,21 @@ export default function VolunteersForm(props) {
               <h4 className={classes.cardTitleWhite}>Informações</h4>
             </CardHeader>
             <CardBody>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={6}>
+                  <FormControl className={classes.formControl}>
+                    <InputLabel id="select">Administração</InputLabel>
+                    <Select
+                      labelId="select"
+                      id="select"
+                      value={administracao}
+                      onChange={handleAdministracaoChange}
+                    >
+                      {getMenuItemAdministracao()}
+                    </Select>
+                  </FormControl>
+                </GridItem>
+              </GridContainer>
               <GridContainer>
                 <GridItem xs={12} sm={12} md={6}>
                   <CustomInput
