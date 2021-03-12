@@ -25,6 +25,11 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import Dialog from "@material-ui/core/Dialog";
 import Snackbar from "@material-ui/core/Snackbar";
 
+import InputLabel from "@material-ui/core/InputLabel";
+import MenuItem from "@material-ui/core/MenuItem";
+import FormControl from "@material-ui/core/FormControl";
+import Select from "@material-ui/core/Select";
+
 import firebase from "firebase";
 
 const styles = {
@@ -62,45 +67,82 @@ export default function ChurchesForm(props) {
   const [churchCode, setChurchCode] = React.useState("");
   const [rehearsalsDescription, setRehearsalsDescription] = React.useState("");
   // const [ministers, setMinisters] = React.useState(null);
+  const [administracoes, setAdministracoes] = React.useState([]);
+  const [administracao, setAdministracao] = React.useState("");
 
   React.useEffect(() => {
-    async function fetchChurch() {
+    async function fetchAdministracoes() {
       let id = props.match.params.id;
-      if (id === undefined) {
-        setLoading(false);
-        return;
-      }
-      setId(id);
-      let snapshot = await firebase
+      let admin = props.match.params.admin;
+
+      let entity = await firebase
         .database()
-        .ref(`/churches/${id}`)
-        .once("value");
+        .ref(`/regionais/ribeirao-preto/administracoes`)
+        .once(`value`);
 
-      setName(snapshot.val()["name"]);
-      setPlace(snapshot.val()["place"]);
-      // setMinisters(snapshot.val()["ministers"]);
+      let administracoes = [];
 
-      if (snapshot.val()["rehearsals"]) {
-        setRehearsals(snapshot.val()["rehearsals"]["weekDay"]);
-        setRehearsalsDescription(snapshot.val()["rehearsals"]["description"]);
+      entity.forEach((element) => {
+        administracoes.push({
+          key: element.key,
+          descricao: element.val(),
+        });
+      });
+
+      setAdministracoes(administracoes);
+      if (id !== undefined && admin !== undefined) {
+        setAdministracao(admin);
+        setId(id);
+        await fetchChurch(admin, id);
       }
-
-      if (snapshot.val()["order"]) {
-        setOrdem(snapshot.val()["order"]);
-      }
-
-      if (snapshot.val()["code"]) {
-        setChurchCode(snapshot.val()["code"]);
-      }
-
-      setCults(snapshot.val()["cults"]);
-      setLocation(snapshot.val()["location"]);
-      setImg(snapshot.val()["imgUrl"]);
-      setLoading(false);
     }
 
-    fetchChurch();
-  }, [props.match.params.id]);
+    fetchAdministracoes();
+  }, [props.match.params.id, props.match.params.admin]);
+
+  async function fetchChurch(admin, id) {
+    setLoading(true);
+    
+    let snapshot = await firebase
+      .database()
+      .ref(`/regionais/ribeirao-preto/dados/${admin}/churches/${id}`)
+      .once("value");
+
+    setName(snapshot.val()["name"]);
+    setPlace(snapshot.val()["place"]);
+    // setMinisters(snapshot.val()["ministers"]);
+
+    if (snapshot.val()["rehearsals"]) {
+      setRehearsals(snapshot.val()["rehearsals"]["weekDay"]);
+      setRehearsalsDescription(snapshot.val()["rehearsals"]["description"]);
+    }
+
+    if (snapshot.val()["order"]) {
+      setOrdem(snapshot.val()["order"]);
+    }
+
+    if (snapshot.val()["code"]) {
+      setChurchCode(snapshot.val()["code"]);
+    }
+
+    setCults(snapshot.val()["cults"]);
+    setLocation(snapshot.val()["location"]);
+    setImg(snapshot.val()["imgUrl"]);
+    setLoading(false);
+  }
+
+  const getMenuItemAdministracao = () => {
+    return administracoes.map((administracao) => (
+      // eslint-disable-next-line react/jsx-key
+      <MenuItem key={administracao.key} value={administracao.key}>
+        {administracao.descricao}
+      </MenuItem>
+    ));
+  };
+
+  const handleAdministracaoChange = (event) => {
+    setAdministracao(event.target.value);
+  };
 
   const selectNewImage = () => {
     document.getElementById("my_file").click();
@@ -170,6 +212,7 @@ export default function ChurchesForm(props) {
     if (name === "") validations.push("Bairro é obrigatório.");
     if (place === "") validations.push("Cidade é obrigatório.");
     if (cults === "") validations.push("Dias de culto é obrigatório.");
+    if (administracao === "") validations.push("Administração é obrigatório.");
     // if (rehearsals === "") validations.push("Dia do ensaio é obrigatório.");
     // if (rehearsalsDescription === "")
     //   validations.push("Descreva a semana do ensaio.");
@@ -200,8 +243,8 @@ export default function ChurchesForm(props) {
         imgUrl: path,
       };
       if (id === null)
-        await firebase.database().ref("/churches").push().set(church);
-      else await firebase.database().ref(`/churches/${id}`).update(church);
+        await firebase.database().ref(`/regionais/ribeirao-preto/dados/${administracao}/churches`).push().set(church);
+      else await firebase.database().ref(`/regionais/ribeirao-preto/dados/${administracao}/churches/${id}`).update(church);
     } catch (error) {
       setErrors([error]);
     }
@@ -221,6 +264,21 @@ export default function ChurchesForm(props) {
               </h4>
             </CardHeader>
             <CardBody>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={6}>
+                  <FormControl style={{width: "100%"}}>
+                    <InputLabel id="select">Administração</InputLabel>
+                    <Select
+                      labelId="select"
+                      id="select"
+                      value={administracao}
+                      onChange={handleAdministracaoChange}
+                    >
+                      {getMenuItemAdministracao()}
+                    </Select>
+                  </FormControl>
+                </GridItem>
+              </GridContainer>
               <GridContainer>
                 <GridItem xs={12} sm={12} md={6}>
                   <CustomInput

@@ -61,7 +61,7 @@ const dashboardRoutes = [
     layout: "/admin",
   },
   {
-    path: "/editar-casa-de-oracao/:id",
+    path: "/editar-casa-de-oracao/:admin/:id",
     name: "Editar Casa de Oração",
     rtlName: "ملف تعريفي للمستخدم",
     icon: "location_city",
