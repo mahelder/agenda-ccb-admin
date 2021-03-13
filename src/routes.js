@@ -28,6 +28,8 @@ import JobsList from "views/Jobs/JobsList.js";
 import JobsForm from "views/Jobs/JobsForm.js";
 import SectionList from "views/Sections/SectionList";
 import SectionForm from "views/Sections/SectionForm";
+import AdmList from "views/Adms/AdmList";
+import AdmForm from "views/Adms/AdmForm";
 import ContactsList from "views/Contacts/ContactsList.js";
 import ContactsForm from "views/Contacts/ContactsForm.js";
 import AgendasList from "views/Agendas/AgendasList.js";
@@ -147,6 +149,31 @@ const dashboardRoutes = [
     layout: "/admin",
   },
   {
+    path: "/administracoes",
+    name: "Administrações",
+    icon: "my_location",
+    component: AdmList,
+    layout: "/admin",
+  },
+  {
+    path: "/nova-administracao",
+    name: "Nova Administração",
+    rtlName: "ملف تعريفي للمستخدم",
+    icon: "my_location",
+    component: AdmForm,
+    invisible: true,
+    layout: "/admin",
+  },
+  {
+    path: "/editar-administracao/:id",
+    name: "Editar Administração",
+    rtlName: "ملف تعريفي للمستخدم",
+    icon: "my_location",
+    component: AdmForm,
+    invisible: true,
+    layout: "/admin",
+  },
+  {
     path: "/secoes",
     name: "Seções",
     icon: "view_quilt",
@@ -196,22 +223,22 @@ const dashboardRoutes = [
     invisible: true,
     layout: "/admin",
   },
-  {
-    path: "/usuarios",
-    name: "Usuários",
-    icon: Person,
-    component: UsersList,
-    layout: "/admin",
-  },
-  {
-    path: "/novo-usuario",
-    name: "Novo Usuário",
-    rtlName: "ملف تعريفي للمستخدم",
-    icon: Person,
-    component: UsersForm,
-    invisible: true,
-    layout: "/admin",
-  },
+  // {
+  //   path: "/usuarios",
+  //   name: "Usuários",
+  //   icon: Person,
+  //   component: UsersList,
+  //   layout: "/admin",
+  // },
+  // {
+  //   path: "/novo-usuario",
+  //   name: "Novo Usuário",
+  //   rtlName: "ملف تعريفي للمستخدم",
+  //   icon: Person,
+  //   component: UsersForm,
+  //   invisible: true,
+  //   layout: "/admin",
+  // },
 ];
 
 export default dashboardRoutes;

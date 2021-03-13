@@ -18,10 +18,22 @@ export default function Dashboard() {
     <div>
       <GridContainer>
         <GridItem xs={12} sm={6} md={3}>
-          <a href="/admin/casas-de-oracao">
+          <a href="/admin/administracoes">
             <Card>
               <CardHeader color="success" stats icon>
                 <CardIcon color="success">
+                  <Icon>my_location</Icon>
+                </CardIcon>
+                <p className={classes.cardCategory}>Administrações</p>
+              </CardHeader>
+            </Card>
+          </a>
+        </GridItem>
+        <GridItem xs={12} sm={6} md={3}>
+          <a href="/admin/casas-de-oracao">
+            <Card>
+              <CardHeader color="info" stats icon>
+                <CardIcon color="info">
                   <Icon>location_city</Icon>
                 </CardIcon>
                 <p className={classes.cardCategory}>Casas de Oração</p>
@@ -32,8 +44,8 @@ export default function Dashboard() {
         <GridItem xs={12} sm={6} md={3}>
           <a href="/admin/lista-telefones">
             <Card>
-              <CardHeader color="info" stats icon>
-                <CardIcon color="info">
+              <CardHeader color="warning" stats icon>
+                <CardIcon color="warning">
                   <Icon>list</Icon>
                 </CardIcon>
                 <p className={classes.cardCategory}>Lista de Telefones</p>
@@ -44,8 +56,8 @@ export default function Dashboard() {
         <GridItem xs={12} sm={6} md={3}>
           <a href="/admin/voluntarios">
             <Card>
-              <CardHeader color="warning" stats icon>
-                <CardIcon color="warning">
+              <CardHeader color="danger" stats icon>
+                <CardIcon color="danger">
                   <Icon>person</Icon>
                 </CardIcon>
                 <p className={classes.cardCategory}>Voluntários</p>
@@ -66,10 +78,22 @@ export default function Dashboard() {
           </a>
         </GridItem>
         <GridItem xs={12} sm={6} md={3}>
-          <a href="/admin/cargos">
+          <a href="/admin/secoes">
             <Card>
               <CardHeader color="warning" stats icon>
                 <CardIcon color="warning">
+                  <Icon>view_quilt</Icon>
+                </CardIcon>
+                <p className={classes.cardCategory}>Seções</p>
+              </CardHeader>
+            </Card>
+          </a>
+        </GridItem>
+        <GridItem xs={12} sm={6} md={3}>
+          <a href="/admin/cargos">
+            <Card>
+              <CardHeader color="info" stats icon>
+                <CardIcon color="info">
                   <Icon>work</Icon>
                 </CardIcon>
                 <p className={classes.cardCategory}>Cargos e Funções</p>
@@ -77,18 +101,18 @@ export default function Dashboard() {
             </Card>
           </a>
         </GridItem>
-        <GridItem xs={12} sm={6} md={3}>
+        {/* <GridItem xs={12} sm={6} md={3}>
           <a href="/admin/usuarios">
             <Card>
-              <CardHeader color="danger" stats icon>
-                <CardIcon color="danger">
+              <CardHeader color="success" stats icon>
+                <CardIcon color="success">
                   <Icon>person</Icon>
                 </CardIcon>
                 <p className={classes.cardCategory}>Usuários</p>
               </CardHeader>
             </Card>
           </a>
-        </GridItem>
+        </GridItem> */}
       </GridContainer>
     </div>
   );
