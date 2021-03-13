@@ -25,7 +25,7 @@ const styles = {
   },
 };
 
-class JobsList extends React.Component {
+class SectionList extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -33,9 +33,7 @@ class JobsList extends React.Component {
       administracoes: [],
       adminitracaoSelecionada: "",
       groups: [],
-      selectedGroup: "",
       jobs: [],
-      availableJobs: [],
     };
   }
 
@@ -45,28 +43,36 @@ class JobsList extends React.Component {
 
   handleNew(event) {
     event.preventDefault();
-    window.location.pathname = "/admin/novo-cargo";
+    window.location.pathname = "/admin/nova-secao";
   }
 
-  async handleDelete(job) {
-    if (window.confirm(`Deseja excluir o cargo ${job["descricao"]}?`)) {
-      job.snapshot.forEach((voluntary) => {
-        if (voluntary.key === "descricao") return;
-        let links = voluntary.val()["links"];
-        Object.keys(links).forEach((key) => {
-          if (links[key] === `/lista-telefones/${job.parent}/${job.key}`) {
-            firebase
-              .database()
-              .ref(`/regionais/ribeirao-preto/dados/${this.state.adminitracaoSelecionada}/voluntarios/${voluntary.key}/links/${key}`)
-              .remove();
-          }
+  async handleDelete(section) {
+    if (window.confirm(`Deseja excluir a seção ${section.val()["descricao"]}?`)) {
+      
+      let administracao = this.state.adminitracaoSelecionada;
+      let jobs = this.getJobsGroup(section.key);
+      
+      jobs.forEach((job) => {
+        job.snapshot.forEach((voluntary) => {
+          if (voluntary.key === "descricao" || voluntary.key === "order") return;
+          let links = voluntary.val()["links"];
+          Object.keys(links).forEach((key) => {
+            if (links[key].startsWith(`/lista-telefones/${job.parent}/${job.key}`)) {
+              firebase
+                .database()
+                .ref(`/regionais/ribeirao-preto/dados/${administracao}/voluntarios/${voluntary.key}/links/${key}`)
+                .remove();
+            }
+          });
         });
       });
+
       firebase
         .database()
-        .ref(`/regionais/ribeirao-preto/dados/${this.state.adminitracaoSelecionada}/lista-telefones/${job.parent}/${job.key}`)
+        .ref(`/regionais/ribeirao-preto/dados/${administracao}/lista-telefones/${section.key}`)
         .remove();
-      await this.loadJobs();
+      
+      await this.loadSections(administracao);
     }
   }
 
@@ -81,49 +87,15 @@ class JobsList extends React.Component {
 
   handleAdministracao(event) {
     this.setState({ adminitracaoSelecionada: event.target.value });
-    this.loadJobs(event.target.value);
-  }
-
-  getMenuItemGroup() {
-    return this.state.groups.map((group) => (
-      // eslint-disable-next-line react/jsx-key
-      <MenuItem key={group.key} value={group.key}>
-        {group.descricao}
-      </MenuItem>
-    ));
-  }
-
-  handleGroup(event) {
-    this.setState({ selectedGroup: event.target.value });
-    this.getJobsGroup(event.target.value);
+    this.loadSections(event.target.value);
   }
 
   getJobsGroup(selectedGroup) {
-    let filteredJobs = this.state.jobs.filter(
+    let availableJobs = this.state.jobs.filter(
       (x) => x.parent === selectedGroup
     );
-    let availableJobs = [];
-    filteredJobs.forEach((x) => {
-      availableJobs.push([
-        x["descricao"],
-        <div key={x.key}>
-          <a href={`/admin/editar-cargo/${this.state.adminitracaoSelecionada}/${x.parent}/${x.key}`}>Editar</a> |{" "}
-          <a href="#" type="button" onClick={() => this.handleDelete(x)}>
-            Excluir
-          </a>
-        </div>,
-        x["order"],
-      ]);
-    });
 
-    availableJobs.sort(function (a, b) {
-      if (parseInt(a[2]) > parseInt(b[2])) return 1;
-      if (parseInt(a[2]) < parseInt(b[2])) return -1;
-      return a[0] > b[0] ? 1 : -1;
-    });
-    availableJobs = availableJobs.map((x) => x.slice(0, -1));
-
-    this.setState({ availableJobs });
+    return availableJobs;
   }
 
   async loadAdministracoes() {
@@ -142,7 +114,7 @@ class JobsList extends React.Component {
     this.setState({ administracoes, loading: false });
   }
 
-  async loadJobs(administracao) {
+  async loadSections(administracao) {
     let jobs = [];
     let groups = [];
 
@@ -153,7 +125,18 @@ class JobsList extends React.Component {
       .ref(`/regionais/ribeirao-preto/dados/${administracao}/lista-telefones`)
       .once("value");
     entity.forEach((element) => {
-      groups.push({ key: element.key, descricao: element.val()["descricao"] });
+      
+      groups.push([
+        element.val()["descricao"],
+        <div key={element.key}>
+          <a href={`/admin/editar-secao/${administracao}/${element.key}`}>Editar</a> |{" "}
+          <a href="#" type="button" onClick={() => this.handleDelete(element)}>
+            Excluir
+          </a>
+        </div>,
+        element.val()["order"] ? element.val()["order"] : Number.MAX_SAFE_INTEGER,
+      ]);
+
       element.forEach((group) => {
         if (group.key !== "descricao" && group.key !== "order") {
           jobs.push({
@@ -168,6 +151,13 @@ class JobsList extends React.Component {
         }
       });
     });
+
+    groups.sort(function (a, b) {
+      if (parseInt(a[2]) > parseInt(b[2])) return 1;
+      if (parseInt(a[2]) < parseInt(b[2])) return -1;
+      return a[0] > b[0] ? 1 : -1;
+    });
+    groups = groups.map((x) => x.slice(0, -1));
 
     this.setState({ jobs, groups, loading: false });
   }
@@ -196,27 +186,14 @@ class JobsList extends React.Component {
             </Select>
           </FormControl>
         </GridItem>
-        <GridItem xs={12} sm={12} md={5}>
-          <FormControl style={styles.formControl}>
-            <InputLabel id="select">Seção</InputLabel>
-            <Select
-              labelId="select"
-              id="select"
-              value={this.state.selectedGroup}
-              onChange={(event) => this.handleGroup(event)}
-            >
-              {this.getMenuItemGroup()}
-            </Select>
-          </FormControl>
-        </GridItem>
         <GridItem xs={12} sm={12} md={12}>
-          {this.state.availableJobs.length > 0 && (
+          {this.state.groups.length > 0 && (
             <Card>
               <CardBody>
                 <Table
                   tableHeaderColor="primary"
                   tableHead={["Nome", ""]}
-                  tableData={this.state.availableJobs}
+                  tableData={this.state.groups}
                 />
               </CardBody>
             </Card>
@@ -227,4 +204,4 @@ class JobsList extends React.Component {
   }
 }
 
-export default JobsList;
+export default SectionList;

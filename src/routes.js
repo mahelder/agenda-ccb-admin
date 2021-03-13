@@ -26,6 +26,8 @@ import VolunteersList from "views/Volunteers/VolunteersList.js";
 import VolunteersForm from "views/Volunteers/VolunteersForm.js";
 import JobsList from "views/Jobs/JobsList.js";
 import JobsForm from "views/Jobs/JobsForm.js";
+import SectionList from "views/Sections/SectionList";
+import SectionForm from "views/Sections/SectionForm";
 import ContactsList from "views/Contacts/ContactsList.js";
 import ContactsForm from "views/Contacts/ContactsForm.js";
 import AgendasList from "views/Agendas/AgendasList.js";
@@ -141,6 +143,31 @@ const dashboardRoutes = [
     rtlName: "ملف تعريفي للمستخدم",
     icon: "calendar_today",
     component: AgendasForm,
+    invisible: true,
+    layout: "/admin",
+  },
+  {
+    path: "/secoes",
+    name: "Seções",
+    icon: "view_quilt",
+    component: SectionList,
+    layout: "/admin",
+  },
+  {
+    path: "/nova-secao",
+    name: "Nova Seção",
+    rtlName: "ملف تعريفي للمستخدم",
+    icon: "view_quilt",
+    component: SectionForm,
+    invisible: true,
+    layout: "/admin",
+  },
+  {
+    path: "/editar-secao/:admin/:id",
+    name: "Editar Seção",
+    rtlName: "ملف تعريفي للمستخدم",
+    icon: "view_quilt",
+    component: SectionForm,
     invisible: true,
     layout: "/admin",
   },

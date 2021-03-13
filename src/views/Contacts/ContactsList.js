@@ -119,7 +119,7 @@ class ContactsList extends React.Component {
           : Number.MAX_SAFE_INTEGER,
       });
       element.forEach((group) => {
-        if (group.key !== "descricao") {
+        if (group.key !== "descricao" && group.key !== "order") {
           offices.push({
             parent: element.key,
             key: group.key,
