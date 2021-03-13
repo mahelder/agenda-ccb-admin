@@ -8,6 +8,10 @@ import CardBody from "components/Card/CardBody.js";
 import CardHeader from "components/Card/CardHeader.js";
 import Button from "components/CustomButtons/Button.js";
 import moment from "moment";
+import MenuItem from "@material-ui/core/MenuItem";
+import FormControl from "@material-ui/core/FormControl";
+import InputLabel from "@material-ui/core/InputLabel";
+import Select from "@material-ui/core/Select";
 
 import firebase from "firebase";
 
@@ -21,20 +25,31 @@ const styles = {
     marginBottom: "3px",
     textDecoration: "none",
   },
+  backdrop: {
+    zIndex: 9999,
+    color: "#fff",
+  },
+  formControl: {
+    width: "100%",
+  },
+  hide: {
+    display: "None"
+  }
 };
 
 class AgendasList extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      administracoes: [],
+      administracaoSelecionada: "",
       agendasMinisteriais: [],
       agendasMusicais: [],
     };
   }
 
   componentDidMount() {
-    this.loadAgendas("ministeriais");
-    this.loadAgendas("musicais");
+    this.loadAdministracoes();
   }
 
   handleNew(event) {
@@ -50,6 +65,22 @@ class AgendasList extends React.Component {
         .remove();
       this.loadAgendas(type);
     }
+  }
+
+  async loadAdministracoes() {
+    let administracoes = [];
+    this.setState({ loading: true });
+
+    let entity = await firebase
+      .database()
+      .ref(`/regionais/ribeirao-preto/administracoes`)
+      .once("value");
+
+    entity.forEach((element) => {
+      administracoes.push({ key: element.key, descricao: element.val() });
+    });
+
+    this.setState({ administracoes, loading: false });
   }
 
   deleteAll(type) {
@@ -108,20 +139,58 @@ class AgendasList extends React.Component {
     else this.setState({ agendasMusicais: agendas });
   }
 
+  getMenuItemAdministracao() {
+    return this.state.administracoes.map((administracao) => (
+      // eslint-disable-next-line react/jsx-key
+      <MenuItem key={administracao.key} value={administracao.key}>
+        {administracao.descricao}
+      </MenuItem>
+    ));
+  }
+
+  handleAdministracao(event) {
+    this.setState({ administracaoSelecionada: event.target.value });
+    this.loadAgendas("musicais");
+    this.loadAgendas("ministeriais");
+  }
+
   render() {
+    let isHide = this.state.administracaoSelecionada.length > 0;
     return (
       <GridContainer>
+        <GridItem xs={12} sm={12} md={12} style={{marginBottom: 30}}>
+          <GridContainer>
+            <GridItem xs={5} sm={5} md={5}>
+              <FormControl style={styles.formControl}>
+                <InputLabel id="select">Administração</InputLabel>
+                <Select
+                  labelId="select"
+                  id="select"
+                  value={this.state.administracaoSelecionada}
+                  onChange={(event) => this.handleAdministracao(event)}
+                >
+                  {this.getMenuItemAdministracao()}
+                </Select>
+              </FormControl>
+            </GridItem>
+            <GridItem xs={4} sm={4} md={4}>
+              <Button type="button" color="info" onClick={this.handleNew}>
+                Adicionar
+              </Button>
+            </GridItem>
+          </GridContainer>
+        </GridItem>
+
         <GridItem xs={12} sm={12} md={12}>
-          <Button type="button" color="info" onClick={this.handleNew}>
-            Adicionar
-          </Button>
           <Button
             type="button"
             color="danger"
             onClick={() => this.deleteAll("ministeriais")}
           >
             Excluir Todas
-          </Button>
+            </Button>
+        </GridItem>
+        <GridItem xs={12} sm={12} md={12}>
           <Card>
             <CardHeader color="primary">
               <h4 style={styles.cardTitleWhite}>Agendas Ministeriais</h4>
