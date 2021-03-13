@@ -37,6 +37,8 @@ class ContactsList extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      administracoes: [],
+      administracaoSelecionada: "",
       selectedGroup: "",
       selectedOffice: "",
       groups: [],
@@ -44,12 +46,28 @@ class ContactsList extends React.Component {
       availableOffices: [],
       data: {},
       tabledata: [],
-      loading: false,
+      loading: true,
     };
   }
 
   componentDidMount() {
-    this.loadContacts();
+    this.loadAdministracoes();
+  }
+
+  async loadAdministracoes() {
+    let administracoes = [];
+    this.setState({ loading: true });
+
+    let entity = await firebase
+      .database()
+      .ref(`/regionais/ribeirao-preto/administracoes`)
+      .once("value");
+
+    entity.forEach((element) => {
+      administracoes.push({ key: element.key, descricao: element.val() });
+    });
+
+    this.setState({ administracoes, loading: false });
   }
 
   handleNew(event) {
@@ -58,39 +76,39 @@ class ContactsList extends React.Component {
   }
 
   async handleDelete(group, office, contact) {
+    let administracao = this.state.administracaoSelecionada;
     if (window.confirm(`Deseja excluir o irmão ${contact.val()["nome"]}?`)) {
       firebase
         .database()
-        .ref(`/voluntarios/${contact.key}/links`)
+        .ref(`/regionais/ribeirao-preto/dados/${administracao}/voluntarios/${contact.key}/links`)
         .orderByValue()
         .equalTo(`/lista-telefones/${group}/${office}/${contact.key}`)
-        .once("value", function (x) {
-          let keys = Object.keys(x.val());
-          keys.forEach((x) =>
+        .once("value", function (x) {          
+          Object.keys(x.val()).forEach((key) => {
             firebase
               .database()
-              .ref(`/voluntarios/${contact.key}/links/${x}`)
+              .ref(`/regionais/ribeirao-preto/dados/${administracao}/voluntarios/${contact.key}/links/${key}`)
               .remove()
-          );
+          });
         });
 
       firebase
         .database()
-        .ref(`/lista-telefones/${group}/${office}/${contact.key}`)
+        .ref(`/regionais/ribeirao-preto/dados/${administracao}/lista-telefones/${group}/${office}/${contact.key}`)
         .remove();
-      await this.loadContacts();
+      await this.loadContacts(administracao);
       this.getTableData(group, office);
     }
   }
 
-  async loadContacts() {
+  async loadContacts(administracao) {
     this.setState({ loading: true });
     let groups = [];
     let offices = [];
     let data = {};
     let entity = await firebase
       .database()
-      .ref(`/lista-telefones`)
+      .ref(`/regionais/ribeirao-preto/dados/${administracao}/lista-telefones`)
       .once("value");
     entity.forEach((element) => {
       groups.push({
@@ -141,6 +159,20 @@ class ContactsList extends React.Component {
     this.setState({ groups, offices, data, loading: false });
   }
 
+  getMenuItemAdministracao() {
+    return this.state.administracoes.map((administracao) => (
+      // eslint-disable-next-line react/jsx-key
+      <MenuItem key={administracao.key} value={administracao.key}>
+        {administracao.descricao}
+      </MenuItem>
+    ));
+  }
+
+  handleAdministracao(event) {
+    this.setState({ administracaoSelecionada: event.target.value });
+    this.loadContacts(event.target.value);
+  }
+
   handleGroup(event) {
     this.setState({ selectedGroup: event.target.value });
     this.getOfficesGroup(event.target.value);
@@ -180,7 +212,7 @@ class ContactsList extends React.Component {
       columns.push(
         <div key={x.key}>
           <a
-            href={`/admin/editar-contato/${selectedGroup}/${selectedOffice}/${x.key}`}
+            href={`/admin/editar-contato/${this.state.administracaoSelecionada}/${selectedGroup}/${selectedOffice}/${x.key}`}
           >
             Editar
           </a>{" "}
@@ -228,7 +260,20 @@ class ContactsList extends React.Component {
           <CircularProgress color="inherit" />
         </Backdrop>
         <GridContainer>
-          <GridItem xs={12} sm={12} md={5}>
+          <GridItem xs={12} sm={12} md={3}>
+            <FormControl style={styles.formControl}>
+              <InputLabel id="select">Administração</InputLabel>
+              <Select
+                labelId="select"
+                id="select"
+                value={this.state.administracaoSelecionada}
+                onChange={(event) => this.handleAdministracao(event)}
+              >
+                {this.getMenuItemAdministracao()}
+              </Select>
+            </FormControl>
+          </GridItem>
+          <GridItem xs={12} sm={12} md={3}>
             <FormControl style={styles.formControl}>
               <InputLabel id="select">Seção</InputLabel>
               <Select
@@ -241,7 +286,7 @@ class ContactsList extends React.Component {
               </Select>
             </FormControl>
           </GridItem>
-          <GridItem xs={12} sm={12} md={5}>
+          <GridItem xs={12} sm={12} md={3}>
             <FormControl style={styles.formControl}>
               <InputLabel id="select">Cargo</InputLabel>
               <Select

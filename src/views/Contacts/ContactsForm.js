@@ -71,107 +71,142 @@ export default function ContactsForm(props) {
   const [officeGroup, setOfficeGroup] = React.useState("");
   const [ordem, setOrdem] = React.useState("");
   const [edit, setEdit] = React.useState(false);
+  const [administracoes, setAdministracoes] = React.useState([]);
+  const [administracao, setAdministracao] = React.useState("");
+
+  React.useEffect(() => {
+    async function fetchAdministracoes() {
+      let id = props.match.params.id;
+      let secao = props.match.params.secao;
+      let cargo = props.match.params.cargo;
+      let admin = props.match.params.admin;
+
+      let entity = await firebase
+        .database()
+        .ref(`/regionais/ribeirao-preto/administracoes`)
+        .once(`value`);
+
+      let administracoes = [];
+
+      entity.forEach((element) => {
+        administracoes.push({
+          key: element.key,
+          descricao: element.val(),
+        });
+      });
+
+      setAdministracoes(administracoes);
+      if (id !== undefined && secao !== undefined && cargo !== undefined && admin !== undefined) {
+        setAdministracao(admin);
+        setVoluntary(id);
+        setGroup(secao);
+        setOfficeGroup(cargo);
+        await fetchContact(admin, secao, cargo, id);
+      } else {
+        setLoading(false);
+      }
+    }
+
+    fetchAdministracoes();
+  }, [props.match.params.id, props.match.params.admin, props.match.params.id, props.match.params.cargo]);
+
+  React.useEffect(() => {
+    loadGroups(administracao);
+  }, [administracao]);
 
   React.useEffect(() => {
     getAvailableOfficeGroup(group);
   }, [group, offices]);
 
-  React.useEffect(() => {
-    async function fetchContact() {
-      let secao = props.match.params.secao;
-      let cargo = props.match.params.cargo;
-      let id = props.match.params.id;
+  async function fetchContact(admin, secao, cargo, id) {
+    setLoading(false);
+    setEdit(true);
 
-      if (id === undefined) {
-        setLoading(false);
-        return;
-      }
+    let snapshot = await firebase
+      .database()
+      .ref(`/regionais/ribeirao-preto/dados/${admin}/lista-telefones/${secao}/${cargo}/${id}`)
+      .once("value");
 
-      setGroup(secao);
-      setOfficeGroup(cargo);
-      setVoluntary(id);
-      setEdit(true);
-
-      let snapshot = await firebase
-        .database()
-        .ref(`/lista-telefones/${secao}/${cargo}/${id}`)
-        .once("value");
-
-      if (snapshot.val()["order"] !== undefined) {
-        setOrdem(snapshot.val()["order"]);
-      }
-      if (snapshot.val()["cargo"] !== undefined) {
-        setOffice(snapshot.val()["cargo"]);
-      }
-      setLoading(false);
+    if (snapshot.val()["order"] !== undefined) {
+      setOrdem(snapshot.val()["order"]);
     }
-
-    async function loadGroups() {
-      let groups = [];
-      let offices = [];
-      let persons = [];
-
-      let entity = await firebase
-        .database()
-        .ref(`/lista-telefones`)
-        .once("value");
-
-      entity.forEach((element) => {
-        groups.push({
-          key: element.key,
-          descricao: element.val()["descricao"],
-          order: element.val()["order"]
-            ? element.val()["order"]
-            : Number.MAX_SAFE_INTEGER,
-        });
-        element.forEach((office) => {
-          if (office.key !== "order" && office.key !== "descricao") {
-            offices.push({
-              parent: element.key,
-              key: office.key,
-              descricao: office.val()["descricao"],
-              order: office.val()["order"]
-                ? office.val()["order"]
-                : Number.MAX_SAFE_INTEGER,
-            });
-          }
-        });
-      });
-
-      let entity_volunteers = await firebase
-        .database()
-        .ref("/voluntarios")
-        .orderByChild("nome")
-        .once("value");
-
-      entity_volunteers.forEach((element) => {
-        persons.push(element);
-      });
-
-      groups.sort(function (a, b) {
-        if (parseInt(a.order) > parseInt(b.order)) return 1;
-        if (parseInt(a.order) < parseInt(b.order)) return -1;
-        return a.descricao > b.descricao ? 1 : -1;
-      });
-
-      offices.sort(function (a, b) {
-        if (parseInt(a.order) > parseInt(b.order)) return 1;
-        if (parseInt(a.order) < parseInt(b.order)) return -1;
-        return a.descricao > b.descricao ? 1 : -1;
-      });
-
-      setGroups(groups);
-      setOffices(offices);
-      setVolunteers(persons);
+    if (snapshot.val()["cargo"] !== undefined) {
+      setOffice(snapshot.val()["cargo"]);
     }
+    setLoading(false);
+  }
 
-    loadGroups();
-    fetchContact();
-  }, [
-    props.match.params.secao,
-    props.match.params.cargo,
-    props.match.params.id,
-  ]);
+  async function loadGroups(admin) {
+    let groups = [];
+    let offices = [];
+    let persons = [];
+
+    let entity = await firebase
+      .database()
+      .ref(`/regionais/ribeirao-preto/dados/${admin}/lista-telefones`)
+      .once("value");
+
+    entity.forEach((element) => {
+      groups.push({
+        key: element.key,
+        descricao: element.val()["descricao"],
+        order: element.val()["order"]
+          ? element.val()["order"]
+          : Number.MAX_SAFE_INTEGER,
+      });
+      element.forEach((office) => {
+        if (office.key !== "order" && office.key !== "descricao") {
+          offices.push({
+            parent: element.key,
+            key: office.key,
+            descricao: office.val()["descricao"],
+            order: office.val()["order"]
+              ? office.val()["order"]
+              : Number.MAX_SAFE_INTEGER,
+          });
+        }
+      });
+    });
+
+    let entity_volunteers = await firebase
+      .database()
+      .ref(`/regionais/ribeirao-preto/dados/${admin}/voluntarios`)
+      .orderByChild("nome")
+      .once("value");
+
+    entity_volunteers.forEach((element) => {
+      persons.push(element);
+    });
+
+    groups.sort(function (a, b) {
+      if (parseInt(a.order) > parseInt(b.order)) return 1;
+      if (parseInt(a.order) < parseInt(b.order)) return -1;
+      return a.descricao > b.descricao ? 1 : -1;
+    });
+
+    offices.sort(function (a, b) {
+      if (parseInt(a.order) > parseInt(b.order)) return 1;
+      if (parseInt(a.order) < parseInt(b.order)) return -1;
+      return a.descricao > b.descricao ? 1 : -1;
+    });
+
+    setGroups(groups);
+    setOffices(offices);
+    setVolunteers(persons);
+  }
+
+  const getMenuItemAdministracao = () => {
+    return administracoes.map((administracao) => (
+      // eslint-disable-next-line react/jsx-key
+      <MenuItem key={administracao.key} value={administracao.key}>
+        {administracao.descricao}
+      </MenuItem>
+    ));
+  };
+
+  const handleAdministracaoChange = (event) => {
+    setAdministracao(event.target.value);
+  };
 
   const getMenuItemGroup = () => {
     return groups.map((group) => (
@@ -269,6 +304,7 @@ export default function ContactsForm(props) {
     if (voluntary === "") validations.push("Voluntário é obrigatório.");
     if (group === "") validations.push("Seção é obrigatório.");
     if (officeGroup === "") validations.push("Cargo/Função é obrigatório.");
+    if (administracao === "") validations.push("Administração é obrigatório.");
 
     setErrors(validations);
     return validations.length > 0;
@@ -292,12 +328,12 @@ export default function ContactsForm(props) {
 
       await firebase
         .database()
-        .ref(`/lista-telefones/${group}/${officeGroup}/${voluntary}`)
+        .ref(`/regionais/ribeirao-preto/dados/${administracao}/lista-telefones/${group}/${officeGroup}/${voluntary}`)
         .update(contact);
 
       await firebase
         .database()
-        .ref(`/voluntarios/${voluntary}/links/${officeGroup}`)
+        .ref(`/regionais/ribeirao-preto/dados/${administracao}/voluntarios/${voluntary}/links/${officeGroup}`)
         .set(`/lista-telefones/${group}/${officeGroup}/${voluntary}`);
     } catch (error) {
       setErrors([error]);
@@ -316,6 +352,21 @@ export default function ContactsForm(props) {
               <h4 className={classes.cardTitleWhite}>Informações</h4>
             </CardHeader>
             <CardBody>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={6}>
+                  <FormControl className={classes.formControl} disabled={edit}>
+                    <InputLabel id="select">Administração</InputLabel>
+                    <Select
+                      labelId="select"
+                      id="select"
+                      value={administracao}
+                      onChange={handleAdministracaoChange}
+                    >
+                      {getMenuItemAdministracao()}
+                    </Select>
+                  </FormControl>
+                </GridItem>
+              </GridContainer>
               <GridContainer>
                 <GridItem xs={12} sm={12} md={6}>
                   <FormControl className={classes.formControl} disabled={edit}>

@@ -101,6 +101,8 @@ export default function VolunteersForm(props) {
         setAdministracao(admin);
         setId(id);
         await fetchVoluntary(admin, id);
+      } else {
+        setLoading(false);
       }
     }
 

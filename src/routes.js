@@ -86,7 +86,7 @@ const dashboardRoutes = [
     layout: "/admin",
   },
   {
-    path: "/editar-contato/:secao/:cargo/:id",
+    path: "/editar-contato/:admin/:secao/:cargo/:id",
     name: "Editar Contato",
     rtlName: "ملف تعريفي للمستخدم",
     icon: "location_city",

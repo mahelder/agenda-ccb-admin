@@ -87,6 +87,8 @@ export default function JobsForm(props) {
       if (id !== undefined && secao !== undefined && admin !== undefined) {
         setAdministracao(admin);
         await fetchJob(admin, secao, id)
+      } else {
+        setLoading(false);
       }
     }
 

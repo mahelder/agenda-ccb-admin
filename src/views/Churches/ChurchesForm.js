@@ -94,6 +94,8 @@ export default function ChurchesForm(props) {
         setAdministracao(admin);
         setId(id);
         await fetchChurch(admin, id);
+      } else {
+        setLoading(false);
       }
     }
 
