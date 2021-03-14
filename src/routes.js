@@ -140,7 +140,7 @@ const dashboardRoutes = [
     layout: "/admin",
   },
   {
-    path: "/editar-reuniao/:type/:month/:id",
+    path: "/editar-reuniao/:admin/:type/:month/:id",
     name: "Editar Reuniao",
     rtlName: "ملف تعريفي للمستخدم",
     icon: "calendar_today",

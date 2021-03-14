@@ -61,9 +61,9 @@ class AgendasList extends React.Component {
     if (window.confirm(`Deseja excluir a agenda ${agenda.val()["name"]}?`)) {
       firebase
         .database()
-        .ref(`/agendas/${type}/${month}/${agenda.key}`)
+        .ref(`/regionais/ribeirao-preto/dados/${this.state.administracaoSelecionada}/agendas/${type}/${month}/${agenda.key}`)
         .remove();
-      this.loadAgendas(type);
+      this.loadAgendas(this.state.administracaoSelecionada, type);
     }
   }
 
@@ -87,19 +87,19 @@ class AgendasList extends React.Component {
     if (window.confirm(`Deseja excluir todas as agendas ${type}?`)) {
       firebase
         .database()
-        .ref(`/agendas/${type}/`)
+        .ref(`/regionais/ribeirao-preto/dados/${this.state.administracaoSelecionada}/agendas/${type}/`)
         .set({
           january: { description: "" },
         });
-      this.loadAgendas(type);
+      this.loadAgendas(this.state.administracaoSelecionada, type);
     }
   }
 
-  async loadAgendas(type) {
+  async loadAgendas(administracao, type) {
     let agendas = [];
     let entity = await firebase
       .database()
-      .ref(`/agendas/${type}`)
+      .ref(`/regionais/ribeirao-preto/dados/${administracao}/agendas/${type}`)
       .once("value");
     entity.forEach((element) => {
       element.forEach((agenda) => {
@@ -111,7 +111,7 @@ class AgendasList extends React.Component {
           agenda.val()["place"],
           <div key={agenda.key}>
             <a
-              href={`/admin/editar-reuniao/${type}/${element.key}/${agenda.key}`}
+              href={`/admin/editar-reuniao/${administracao}/${type}/${element.key}/${agenda.key}`}
             >
               Editar
             </a>{" "}
@@ -150,12 +150,12 @@ class AgendasList extends React.Component {
 
   handleAdministracao(event) {
     this.setState({ administracaoSelecionada: event.target.value });
-    this.loadAgendas("musicais");
-    this.loadAgendas("ministeriais");
+    this.loadAgendas(event.target.value, "musicais");
+    this.loadAgendas(event.target.value, "ministeriais");
   }
 
   render() {
-    let isHide = this.state.administracaoSelecionada.length > 0;
+    let isShow = this.state.administracaoSelecionada.length > 0;
     return (
       <GridContainer>
         <GridItem xs={12} sm={12} md={12} style={{marginBottom: 30}}>
@@ -181,7 +181,7 @@ class AgendasList extends React.Component {
           </GridContainer>
         </GridItem>
 
-        <GridItem xs={12} sm={12} md={12}>
+        <GridItem xs={12} sm={12} md={12} style={{ display: isShow ? "inherit": "None"}}>
           <Button
             type="button"
             color="danger"
@@ -190,7 +190,7 @@ class AgendasList extends React.Component {
             Excluir Todas
             </Button>
         </GridItem>
-        <GridItem xs={12} sm={12} md={12}>
+        <GridItem xs={12} sm={12} md={12} style={{ display: isShow ? "inherit": "None"}}>
           <Card>
             <CardHeader color="primary">
               <h4 style={styles.cardTitleWhite}>Agendas Ministeriais</h4>
@@ -207,7 +207,7 @@ class AgendasList extends React.Component {
             </CardBody>
           </Card>
         </GridItem>
-        <GridItem xs={12} sm={12} md={12}>
+        <GridItem xs={12} sm={12} md={12} style={{ display: isShow ? "inherit": "None"}}>
           <Button
             type="button"
             color="danger"
@@ -215,6 +215,8 @@ class AgendasList extends React.Component {
           >
             Excluir Todas
           </Button>
+        </GridItem>
+        <GridItem xs={12} sm={12} md={12} style={{ display: isShow ? "inherit": "None"}}>          
           <Card>
             <CardHeader color="primary">
               <h4 style={styles.cardTitleWhite}>Agendas Musicais</h4>

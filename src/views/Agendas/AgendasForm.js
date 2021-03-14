@@ -104,45 +104,78 @@ export default function AgendasForm(props) {
   const [time, setTime] = React.useState(moment(today).format("HH:mm"));
   const [description, setDescription] = React.useState("");
   const [type, setType] = React.useState(["ministeriais"]);
+  const [administracoes, setAdministracoes] = React.useState([]);
+  const [administracao, setAdministracao] = React.useState("");
 
   React.useEffect(() => {
-    async function fetchAgenda() {
+    async function fetchAdministracoes() {
       let id = props.match.params.id;
       let month = props.match.params.month;
       let type = props.match.params.type;
+      let admin = props.match.params.admin;
 
-      if (id === undefined) {
-        setLoading(false);
-        return;
-      }
-      setId(id);
-      setMonth(month);
-      setType([type]);
-
-      let snapshot = await firebase
+      let entity = await firebase
         .database()
-        .ref(`/agendas/${type}/${month}/${id}`)
-        .once("value");
+        .ref(`/regionais/ribeirao-preto/administracoes`)
+        .once(`value`);
 
-      setName(snapshot.val()["name"]);
-      setPlace(snapshot.val()["place"]);
-      setDate(
-        moment(
-          `${snapshot.val()["date"]} ${snapshot.val()["time"]}`,
-          "YYYY-MM-DD HH:mm"
-        )
-      );
-      setTime(snapshot.val()["time"]);
-      setDescription(snapshot.val()["description"]);
-      setLoading(false);
+      let administracoes = [];
+
+      entity.forEach((element) => {
+        administracoes.push({
+          key: element.key,
+          descricao: element.val(),
+        });
+      });
+
+      setAdministracoes(administracoes);
+      if (id !== undefined && admin !== undefined) {
+        setAdministracao(admin);
+        setId(id);
+        setType([type]);
+        setMonth(month);
+        await fetchAgenda(admin, type, month, id);
+      } else {
+        setLoading(false);
+      }
     }
 
-    fetchAgenda();
-  }, [
-    props.match.params.id,
-    props.match.params.month,
-    props.match.params.type,
-  ]);
+    fetchAdministracoes();
+  }, [props.match.params.id, props.match.params.month, props.match.params.type, props.match.params.admin]);
+
+  async function fetchAgenda(admin, type, month, id) {
+    setLoading(true);
+
+    let snapshot = await firebase
+      .database()
+      .ref(`/regionais/ribeirao-preto/dados/${admin}/agendas/${type}/${month}/${id}`)
+      .once("value");
+
+    setName(snapshot.val()["name"]);
+    setPlace(snapshot.val()["place"]);
+    setDate(
+      moment(
+        `${snapshot.val()["date"]} ${snapshot.val()["time"]}`,
+        "YYYY-MM-DD HH:mm"
+      )
+    );
+    setTime(snapshot.val()["time"]);
+    setDescription(snapshot.val()["description"]);
+    setLoading(false);
+  }
+
+  const getMenuItemAdministracao = () => {
+    return administracoes.map((administracao) => (
+      // eslint-disable-next-line react/jsx-key
+      <MenuItem key={administracao.key} value={administracao.key}>
+        {administracao.descricao}
+      </MenuItem>
+    ));
+  };
+
+  const handleAdministracaoChange = (event) => {
+    setAdministracao(event.target.value);
+  };
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -182,6 +215,7 @@ export default function AgendasForm(props) {
     if (place === "") validations.push("Local é obrigatório.");
     if (date === "") validations.push("Data da reunião é obrigatório.");
     if (time === "") validations.push("Horário da reunião é obrigatório.");
+    if (administracao === "") validations.push("Administração é obrigatório.");
     if (type.length === 0)
       validations.push("Selecione em quais agendas quer publicar o evento.");
 
@@ -205,13 +239,13 @@ export default function AgendasForm(props) {
         if (id === null)
           await firebase
             .database()
-            .ref(`/agendas/${t}/${month}`)
+            .ref(`/regionais/ribeirao-preto/dados/${administracao}/agendas/${t}/${month}`)
             .push()
             .set(agenda);
         else
           await firebase
             .database()
-            .ref(`/agendas/${t}/${month}/${id}`)
+            .ref(`/regionais/ribeirao-preto/dados/${administracao}/agendas/${t}/${month}/${id}`)
             .update(agenda);
       });
     } catch (error) {
@@ -231,6 +265,21 @@ export default function AgendasForm(props) {
               <h4 className={classes.cardTitleWhite}>Informações da Reunião</h4>
             </CardHeader>
             <CardBody>
+              <GridContainer>
+              <GridItem xs={12} sm={12} md={6}>
+                  <FormControl className={classes.formControl} disabled={id !== null}>
+                    <InputLabel id="select">Administração</InputLabel>
+                    <Select
+                      labelId="select"
+                      id="select"
+                      value={administracao}
+                      onChange={handleAdministracaoChange}
+                    >
+                      {getMenuItemAdministracao()}
+                    </Select>
+                  </FormControl>
+                </GridItem>
+              </GridContainer>
               <GridContainer>
                 <GridItem xs={12} sm={12} md={6}>
                   <CustomInput
