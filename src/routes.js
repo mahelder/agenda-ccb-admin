@@ -34,6 +34,8 @@ import ContactsList from "views/Contacts/ContactsList.js";
 import ContactsForm from "views/Contacts/ContactsForm.js";
 import AgendasList from "views/Agendas/AgendasList.js";
 import AgendasForm from "views/Agendas/AgendasForm.js";
+import EventsList from "views/Events/EventsList.js";
+import EventsForm from "views/Events/EventsForm.js";
 import UsersList from "views/Users/UsersList.js";
 import UsersForm from "views/Users/UsersForm.js";
 
@@ -76,7 +78,7 @@ const dashboardRoutes = [
   {
     path: "/lista-telefones",
     name: "Lista de Telefones",
-    icon: "list",
+    icon: "contacts",
     component: ContactsList,
     layout: "/admin",
   },
@@ -84,7 +86,7 @@ const dashboardRoutes = [
     path: "/novo-contato",
     name: "Cadastro Contato",
     rtlName: "ملف تعريفي للمستخدم",
-    icon: "location_city",
+    icon: "contacts",
     component: ContactsForm,
     invisible: true,
     layout: "/admin",
@@ -93,7 +95,7 @@ const dashboardRoutes = [
     path: "/editar-contato/:admin/:secao/:cargo/:id",
     name: "Editar Contato",
     rtlName: "ملف تعريفي للمستخدم",
-    icon: "location_city",
+    icon: "contacts",
     component: ContactsForm,
     invisible: true,
     layout: "/admin",
@@ -145,6 +147,31 @@ const dashboardRoutes = [
     rtlName: "ملف تعريفي للمستخدم",
     icon: "calendar_today",
     component: AgendasForm,
+    invisible: true,
+    layout: "/admin",
+  },
+  {
+    path: "/lista",
+    name: "Lista",
+    icon: "list",
+    component: EventsList,
+    layout: "/admin",
+  },
+  {
+    path: "/novo-evento",
+    name: "Nova Evento",
+    rtlName: "ملف تعريفي للمستخدم",
+    icon: "list",
+    component: EventsForm,
+    invisible: true,
+    layout: "/admin",
+  },
+  {
+    path: "/editar-evento/:month/:id",
+    name: "Editar Evento",
+    rtlName: "ملف تعريفي للمستخدم",
+    icon: "list",
+    component: EventsForm,
     invisible: true,
     layout: "/admin",
   },

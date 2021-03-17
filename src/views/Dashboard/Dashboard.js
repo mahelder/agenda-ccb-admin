@@ -46,7 +46,7 @@ export default function Dashboard() {
             <Card>
               <CardHeader color="warning" stats icon>
                 <CardIcon color="warning">
-                  <Icon>list</Icon>
+                  <Icon>contacts</Icon>
                 </CardIcon>
                 <p className={classes.cardCategory}>Lista de Telefones</p>
               </CardHeader>
@@ -97,6 +97,18 @@ export default function Dashboard() {
                   <Icon>work</Icon>
                 </CardIcon>
                 <p className={classes.cardCategory}>Cargos e Funções</p>
+              </CardHeader>
+            </Card>
+          </a>
+        </GridItem>
+        <GridItem xs={12} sm={6} md={3}>
+          <a href="/admin/lista">
+            <Card>
+              <CardHeader color="success" stats icon>
+                <CardIcon color="success">
+                  <Icon>list</Icon>
+                </CardIcon>
+                <p className={classes.cardCategory}>Lista de Serviços</p>
               </CardHeader>
             </Card>
           </a>
