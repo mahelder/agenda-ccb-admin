@@ -143,9 +143,11 @@ export default function EventsForm(props) {
 
   const getMenuItemServices = () => {
     let services = [
-      "Batismos",
-      "Santa-Ceias",
-      "Reuniões da Mocidade",
+      "Batismo",
+      "Santa-Ceia",
+      "Reunião da Mocidade",
+      "Reunião da Piedade",
+      "Ensaio Regional",
     ];
     return services.map((x) => (
       // eslint-disable-next-line react/jsx-key
@@ -325,7 +327,7 @@ export default function EventsForm(props) {
                   <TextField
                     className={classes.formControl}
                     id="standard-multiline-flexible"
-                    label="Detalhes Reunião"
+                    label="Detalhes"
                     multiline
                     rowsMax={4}
                     value={description}
