@@ -191,7 +191,6 @@ export default function EventsForm(props) {
 
   const validate = () => {
     let validations = [];
-    if (name === "") validations.push("Nome é obrigatório.");
     if (place === "") validations.push("Local é obrigatório.");
     if (date === "") validations.push("Data da reunião é obrigatório.");
     if (time === "") validations.push("Horário da reunião é obrigatório.");
