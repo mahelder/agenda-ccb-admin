@@ -151,7 +151,7 @@ const dashboardRoutes = [
     layout: "/admin",
   },
   {
-    path: "/lista",
+    path: "/eventos",
     name: "Lista",
     icon: "list",
     component: EventsList,

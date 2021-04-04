@@ -102,7 +102,7 @@ export default function Dashboard() {
           </a>
         </GridItem>
         <GridItem xs={12} sm={6} md={3}>
-          <a href="/admin/lista">
+          <a href="/admin/eventos">
             <Card>
               <CardHeader color="success" stats icon>
                 <CardIcon color="success">
