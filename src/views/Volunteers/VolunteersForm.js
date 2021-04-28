@@ -203,7 +203,7 @@ export default function VolunteersForm(props) {
         telefone2: phone2,
         comum: common,
         outrasComuns: secondaryCommons.join(","),
-        links: links,
+        links: links !== undefined ? links : null,
       };
 
       if (id === null) {
