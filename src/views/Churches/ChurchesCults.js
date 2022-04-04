@@ -107,6 +107,16 @@ export default function ChurchesCults(props) {
             <FormControlLabel
               control={
                 <Checkbox
+                  name="5T"
+                  checked={cults.includes("5T")}
+                  onChange={handleCheck}
+                />
+              }
+              label="5T"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
                   name="5N"
                   checked={cults.includes("5N")}
                   onChange={handleCheck}
