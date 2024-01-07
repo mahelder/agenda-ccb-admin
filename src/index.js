@@ -24,6 +24,7 @@ import { Router, Route, Switch, Redirect } from "react-router-dom";
 import Admin from "layouts/Admin.js";
 import RTL from "layouts/RTL.js";
 import SignIn from "views/Login/SignIn.js";
+import Policy from "views/Policy/policy.js";
 
 import "assets/css/material-dashboard-react.css?v=1.9.0";
 
@@ -37,6 +38,7 @@ ReactDOM.render(
       <Route path="/admin" component={Admin} />
       <Route path="/rtl" component={RTL} />
       <Route path="/auth" component={SignIn} />
+      <Route path="/policy" component={Policy} />
       <Redirect from="/" to="/admin/dashboard" />
     </Switch>
   </Router>,

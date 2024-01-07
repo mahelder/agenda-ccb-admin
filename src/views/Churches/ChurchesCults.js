@@ -36,7 +36,7 @@ export default function ChurchesCults(props) {
               control={
                 <Checkbox
                   name="RJM-DM"
-                  checked={cults.includes("RJM-DM")}
+                  checked={cults.split(",").includes("RJM-DM")}
                   onChange={handleCheck}
                 />
               }
@@ -45,8 +45,38 @@ export default function ChurchesCults(props) {
             <FormControlLabel
               control={
                 <Checkbox
+                  name="RJM-DT"
+                  checked={cults.split(",").includes("RJM-DT")}
+                  onChange={handleCheck}
+                />
+              }
+              label="RJM-DT"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="RJM-SN"
+                  checked={cults.split(",").includes("RJM-SN")}
+                  onChange={handleCheck}
+                />
+              }
+              label="RJM-SN"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="RJM-6N"
+                  checked={cults.split(",").includes("RJM-6N")}
+                  onChange={handleCheck}
+                />
+              }
+              label="RJM-6N"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
                   name="DT"
-                  checked={cults.includes("DT")}
+                  checked={cults.split(",").includes("DT")}
                   onChange={handleCheck}
                 />
               }
@@ -56,7 +86,7 @@ export default function ChurchesCults(props) {
               control={
                 <Checkbox
                   name="DN"
-                  checked={cults.includes("DN")}
+                  checked={cults.split(",").includes("DN")}
                   onChange={handleCheck}
                 />
               }
@@ -66,7 +96,7 @@ export default function ChurchesCults(props) {
               control={
                 <Checkbox
                   name="2N"
-                  checked={cults.includes("2N")}
+                  checked={cults.split(",").includes("2N")}
                   onChange={handleCheck}
                 />
               }
@@ -76,7 +106,7 @@ export default function ChurchesCults(props) {
               control={
                 <Checkbox
                   name="3T"
-                  checked={cults.includes("3T")}
+                  checked={cults.split(",").includes("3T")}
                   onChange={handleCheck}
                 />
               }
@@ -88,7 +118,7 @@ export default function ChurchesCults(props) {
               control={
                 <Checkbox
                   name="3N"
-                  checked={cults.includes("3N")}
+                  checked={cults.split(",").includes("3N")}
                   onChange={handleCheck}
                 />
               }
@@ -98,7 +128,7 @@ export default function ChurchesCults(props) {
               control={
                 <Checkbox
                   name="4N"
-                  checked={cults.includes("4N")}
+                  checked={cults.split(",").includes("4N")}
                   onChange={handleCheck}
                 />
               }
@@ -108,7 +138,7 @@ export default function ChurchesCults(props) {
               control={
                 <Checkbox
                   name="5T"
-                  checked={cults.includes("5T")}
+                  checked={cults.split(",").includes("5T")}
                   onChange={handleCheck}
                 />
               }
@@ -118,7 +148,7 @@ export default function ChurchesCults(props) {
               control={
                 <Checkbox
                   name="5N"
-                  checked={cults.includes("5N")}
+                  checked={cults.split(",").includes("5N")}
                   onChange={handleCheck}
                 />
               }
@@ -128,7 +158,7 @@ export default function ChurchesCults(props) {
               control={
                 <Checkbox
                   name="6N"
-                  checked={cults.includes("6N")}
+                  checked={cults.split(",").includes("6N")}
                   onChange={handleCheck}
                 />
               }
@@ -138,7 +168,7 @@ export default function ChurchesCults(props) {
               control={
                 <Checkbox
                   name="SN"
-                  checked={cults.includes("SN")}
+                  checked={cults.split(",").includes("SN")}
                   onChange={handleCheck}
                 />
               }
