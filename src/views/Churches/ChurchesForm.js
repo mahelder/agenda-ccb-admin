@@ -16,6 +16,10 @@ import defaultImage from "assets/img/sem_imagem.jpg";
 import ChurchesCults from "views/Churches/ChurchesCults.js";
 import ChurchesRehearsals from "views/Churches/ChurchesRehearsals.js";
 // import ChurchesMinisters from "views/Churches/ChurchesMinisters.js";
+import Checkbox from "@material-ui/core/Checkbox";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import FormGroup from "@material-ui/core/FormGroup";
+import FormLabel from "@material-ui/core/FormLabel";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Backdrop from "@material-ui/core/Backdrop";
 import List from "@material-ui/core/List";
@@ -56,6 +60,8 @@ export default function ChurchesForm(props) {
   const [name, setName] = React.useState("");
   const [place, setPlace] = React.useState("");
   const [cults, setCults] = React.useState("");
+  const [libras, setLibras] = React.useState("");
+  const [RC, setRC] = React.useState(false);
   const [location, setLocation] = React.useState("");
   const [rehearsals, setRehearsals] = React.useState("");
   const [ordem, setOrdem] = React.useState("");
@@ -93,6 +99,14 @@ export default function ChurchesForm(props) {
         setChurchCode(snapshot.val()["code"]);
       }
 
+      if (snapshot.val()["libras"]) {
+        setLibras(snapshot.val()["libras"]);
+      }
+
+      if (snapshot.val()["rc"]) {
+        setRC(snapshot.val()["rc"]);
+      }
+
       setCults(snapshot.val()["cults"]);
       setLocation(snapshot.val()["location"]);
       setImg(snapshot.val()["imgUrl"]);
@@ -124,6 +138,14 @@ export default function ChurchesForm(props) {
 
   const handleCodeChange = (event) => {
     setChurchCode(event.target.value);
+  };
+
+  const handleLibrasChange = (event) => {
+    setLibras(event.target.value);
+  };
+
+  const handleCheck = (event) => {
+    setRC(event.target.checked);
   };
 
   const handleClose = () => {
@@ -190,6 +212,8 @@ export default function ChurchesForm(props) {
         place: place,
         // ministers: ministers,
         cults: cults,
+        libras: libras,
+        rc: RC,
         location: location,
         order: ordem,
         code: churchCode,
@@ -288,6 +312,34 @@ export default function ChurchesForm(props) {
                       onChange: handleCodeChange,
                     }}
                   />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={6}>
+                  <CustomInput
+                    labelText="Libras"
+                    id="libras"
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                    inputProps={{
+                      value: libras,
+                      onChange: handleLibrasChange,
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={6}>
+                  <FormLabel component="legend"></FormLabel>        
+                  <FormGroup aria-label="position" row>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          name="Reunião de Crianças"
+                          checked={RC}
+                          onChange={handleCheck}
+                        />
+                      }
+                      label="RC"
+                    />
+                  </FormGroup>
                 </GridItem>
               </GridContainer>
               <ChurchesCults callback={setCults} cults={cults} />
