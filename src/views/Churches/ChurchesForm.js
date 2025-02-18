@@ -55,8 +55,10 @@ export default function ChurchesForm(props) {
   const [success, setSucess] = React.useState(false);
   const [errors, setErrors] = React.useState([]);
   const [file, setFile] = React.useState(null);
+  const [fileVideo, setFileVideo] = React.useState(null);
   const [id, setId] = React.useState(null);
   const [img, setImg] = React.useState(defaultImage);
+  const [videoURL, setVideoURL] = React.useState("");
   const [name, setName] = React.useState("");
   const [place, setPlace] = React.useState("");
   const [cults, setCults] = React.useState("");
@@ -105,6 +107,10 @@ export default function ChurchesForm(props) {
 
       if (snapshot.val()["rc"]) {
         setRC(snapshot.val()["rc"]);
+      }
+
+      if (snapshot.val()["videoUrl"]) {
+        setVideoURL(snapshot.val()["videoUrl"]);
       }
 
       setCults(snapshot.val()["cults"]);
@@ -167,6 +173,27 @@ export default function ChurchesForm(props) {
     reader.readAsDataURL(file);
   };
 
+  const handleVideoFileChange = (event) => {
+    event.preventDefault();
+
+    let reader = new FileReader();
+    let file = event.target.files[0];
+
+    reader.onloadend = () => {
+      setFileVideo(file);
+      let url = URL.createObjectURL(file);
+      let vid = document.getElementsByTagName('video')[0];
+
+      vid.src = url;
+      vid.load();
+      vid.onloadeddata = function () {
+        vid.play();
+      }
+    };
+
+    reader.readAsDataURL(file);
+  };
+
   const uploadImage = async () => {
     if (file) {
       try {
@@ -179,6 +206,19 @@ export default function ChurchesForm(props) {
       }
     } else {
       return img;
+    }
+  };
+
+  const uploadVideo = async () => {
+    if (fileVideo) {
+      try {
+        var storageRef = firebase.storage().ref().child(`videos/${fileVideo.name}`);
+        await storageRef.put(fileVideo);
+        let path = await storageRef.getDownloadURL();
+        return path;
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
@@ -207,6 +247,8 @@ export default function ChurchesForm(props) {
     setLoading(true);
     try {
       let path = await uploadImage();
+      let pathVideo = await uploadVideo();
+
       let church = {
         name: name,
         place: place,
@@ -222,6 +264,7 @@ export default function ChurchesForm(props) {
           description: rehearsalsDescription,
         },
         imgUrl: path,
+        videoUrl: pathVideo
       };
       if (id === null)
         await firebase.database().ref("/churches").push().set(church);
@@ -327,7 +370,7 @@ export default function ChurchesForm(props) {
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={6}>
-                  <FormLabel component="legend"></FormLabel>        
+                  <FormLabel component="legend"></FormLabel>
                   <FormGroup aria-label="position" row>
                     <FormControlLabel
                       control={
@@ -391,16 +434,28 @@ export default function ChurchesForm(props) {
           </Card>
         </GridItem>
         <GridItem xs={12} sm={12} md={4}>
-          <a href="#" onClick={() => selectNewImage()}>
-            <img src={img} alt="church" width="300" height="300" />
+          <GridItem xs={12} sm={12} md={12}>
+            <a href="#" onClick={() => selectNewImage()}>
+              <img src={img} alt="church" width="300" height="300" />
+              <input
+                type="file"
+                id="my_file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={(e) => handleImageChange(e)}
+              />
+            </a>
+          </GridItem>
+
+          <GridItem xs={12} sm={12} md={4}>
+            <video width="300" height="300" controls src={videoURL} />
             <input
               type="file"
-              id="my_file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={(e) => handleImageChange(e)}
+              id="my_file_video"
+              accept="video/*"
+              onChange={(e) => handleVideoFileChange(e)}
             />
-          </a>
+          </GridItem>
         </GridItem>
       </GridContainer>
     </div>
