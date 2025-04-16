@@ -219,6 +219,8 @@ export default function ChurchesForm(props) {
       } catch (error) {
         console.log(error);
       }
+    } else {
+      return "";
     }
   };
 
